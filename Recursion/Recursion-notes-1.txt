@@ -1,0 +1,27 @@
+Recursion is function calling itself.
+
+When Recursion calls itself until a specified conditions is met.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
