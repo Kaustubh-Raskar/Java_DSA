@@ -1,0 +1,100 @@
+Constructor reference -
+
+interface MyFunc {
+	MyClass func(int n);
+}
+
+class MyClass {
+	private int val;
+	
+	MyClass(int val) {this.val = val;}
+	MyClass(){
+		val = 0;
+	}
+	int getVal() { return val;};
+}
+
+class ConstructorRefDemo{
+	psvm(){
+		// Create reference to MyClass Constructor
+		// because func() in MyFunc takes an argument, new refers to parameterized constructor in MyClass
+		// not the default constructor
+		MyFunc myClassCons = MyClass::new;
+		
+		// create an instance of MyClass via that constructor reference
+		MyClass mc = myClassCons.func(100);
+		
+		// use the instance of MyClass
+		Sysout("val in MyClass is " + mc.getVal());
+	}
+}
+-------------------------------------------------------------------------------------------------------------------------------
+Generic Constructor reference:
+
+interface MyFunc<T> {
+	MyClass<T> func(T n);
+}
+
+class MyClass<T> {
+	private T val;
+	
+	MyClass(T val) {this.val = val;}
+	MyClass(){
+		val = null;
+	}
+	T getVal() { return val;};
+}
+
+class ConstructorRefDemo{
+	psvm(){
+		// Create reference to MyClass Constructor
+		// because func() in MyFunc takes an argument, new refers to parameterized constructor in MyClass
+		// not the default constructor
+		MyFunc<Integer> myClassCons = MyClass<Integer>::new;
+		
+		// create an instance of MyClass via that constructor reference
+		MyClass<Integer> mc = myClassCons.func(100);
+		
+		// use the instance of MyClass
+		Sysout("val in MyClass is " + mc.getVal());
+	}
+}
+----------------------------------------------------------------------------------------------------
+// Implement a simple class factory using constructor reference
+
+interface MyFunc<R,T> {
+	R func(T n);
+}
+
+class MyClass<T> {
+	private T val;
+	MyClass(T val) { this.val = val;}
+	T getVal() {return val;};
+}
+
+class MyClass2 {
+	String str;
+	MyClass2(String str) {this.str = str;}
+	MyClass2() { str = "";}
+	String getStr() { return str; };
+}
+
+class ConstructorRefDemo3{
+	
+	static <R,T> R myClassFactory(MyFunc<R,T> cons, T v){
+		return cons.func(v);
+	}
+	
+	psvm(){
+		MyFunc<MyClass<Double>,Double> myClassCons = MyClass<Double>::new;
+		
+		MyClass<Double> mc = myClassFactory(myClassCons,100.1);
+		sysout(mc.getVal());
+		
+		MyFunc<MyClass2,String> myClassCons2 = MyClass2::new;
+		
+		MyClass2 mc2 = myClassFactory(myClassCons, "Lambda");
+		sysout(mc2.getStr());
+		
+	}
+}

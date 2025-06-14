@@ -1,0 +1,11 @@
+1.
+
+List<Integer> salaryList = new ArrayList<>();
+salaryList.add(3000);.......................added more
+
+//finding salary count which are more than 3000
+long output = salaryList.stream().filter((Integer sal) -> sal>3000).count;
+
+__________________________________________________________________________________________________
+
+

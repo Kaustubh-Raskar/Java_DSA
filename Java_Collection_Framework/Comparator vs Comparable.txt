@@ -1,0 +1,70 @@
+Comparator vs Comparable:
+
+We can sort the primitive array by Arrays.sort() but in case of Object sorting it doesn't work.
+We need comparator and comparable for that -
+
+How to sort the Object Array:
+2 Approaches are there :
+
+1. Comparator -> int compare(T obj1, T obj2)
+	
+	sorting algorithm uses this compare method of Comparator to compare 2 variables and decide whether to swap the variables or not.
+	- Method returns :
+	1 - if v1 is greater than v2
+	0 - if v1 is equals to v2
+	-1 - if v2 is greater than v1
+	
+	Mostly in this algorithm, if this method returns 1 then it swaps the values.
+	
+2. Comparable -> int compareTo(T obj2)
+
+Sorting algorithm uses this compareTo method of Comparable to compare 2 variables and decide whether to swap the variables or not.
+
+Example 1:
+For ascending:
+Arrays.sort(carArray,(Car obj1, Car obj2) -> obj1.carType.compareTo(obj2.carType));
+
+For descending:
+Arrays.sort(carArray,(Car obj1, Car obj2) -> obj2.carType.compareTo(obj1.carType));
+---------------------------------------------------------------------------------------------------------
+Example 2:
+
+We can also make a separate Comparator class which extends Comparator<> interface -
+public class CarNameCommparator implements Comparator<Car>{
+	
+	@Override
+	public int compare(Car obj1, Car obj2){
+		return obj2.carType.compareTo(obj1.carType);
+	}
+}
+
+and then we can use this comparator instance as required -
+Collections.sort(cars, new CarNameComparator());
+cars.forEach((Car carObj) -> System.out.println(carObj.carName + " " + carObj.carType));
+
+--------------------------------------------------------------------------------------------------------------
+Example 3 -
+
+Or we can simply declare the compare method in the Car entity  class implementing Comparator<Car> interface
+
+public class Car implements Comparator<Car>{
+	String carName;
+	String carType;
+	
+	Car(){
+	};
+	
+	Car(String name, String type){
+		this.carName = name;
+		this.carType = type;
+	}
+	
+	@Override
+	public int compare(Car o1, Car o2){
+		return o2.carName.compareTo(o1.carName);
+	}
+}
+
+then when we need to use it then simply add Car instance as argument in the Sort method.
+Collections.sort(cars, new Car());
+_______________________________________________________________________________________________________________________________________

@@ -1,0 +1,186 @@
+What is Stream:
+
+We can consider Stream as a pipeline, through which our collection elements passes through.
+While elements passes through pipelines, it perform various operations like sorting, filtering etc.
+Useful when deals with bulk processing. (Can do parallel processing)
+
+
+1. Streams are created from the data source like Collection or array etc.
+2. Intermediate Operations:
+
+  List of Intermediate Operations:
+| Method                             | Description                                                      |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| `filter(Predicate<T>)`             | Filters elements based on a predicate (condition).               |
+| `map(Function<T,R>)`               | Transforms each element to another object.                       |
+| `mapToInt(ToIntFunction<T>)`       | Maps elements to `int` values (produces `IntStream`).            |
+| `mapToLong(ToLongFunction<T>)`     | Maps to `long` values (`LongStream`).                            |
+| `mapToDouble(ToDoubleFunction<T>)` | Maps to `double` values (`DoubleStream`).                        |
+| `flatMap(Function<T,Stream<R>>)`   | Flattens nested streams (e.g., a stream of lists).               |
+| `distinct()`                       | Removes duplicate elements.                                      |
+| `sorted()`                         | Sorts elements in natural order.                                 |
+| `sorted(Comparator<T>)`            | Sorts with a custom comparator.                                  |
+| `peek(Consumer<T>)`                | Performs an action on each element (used for debugging/logging). |
+| `limit(long n)`                    | Limits the stream to `n` elements.                               |
+| `skip(long n)`                     | Skips the first `n` elements.                                    |
+
+
+3. Terminal operations:
+
+  List of Terminal Operations:
+| Method                                  | Description                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------------ |
+| `forEach(Consumer<T>)`                  | Performs an action for each element.                                           |
+| `forEachOrdered(Consumer<T>)`           | Same as `forEach`, but preserves encounter order (used with parallel streams). |
+| `toArray()`                             | Converts the stream into an array.                                             |
+| `reduce(BinaryOperator<T>)`             | Reduces the elements using an associative accumulation function.               |
+| `reduce(T identity, BinaryOperator<T>)` | Same as above, with identity value.                                            |
+| `collect(Collector<T, A, R>)`           | Performs a mutable reduction (e.g., to `List`, `Set`, `Map`).                  |
+| `min(Comparator<T>)`                    | Finds the minimum element.                                                     |
+| `max(Comparator<T>)`                    | Finds the maximum element.                                                     |
+| `count()`                               | Returns the number of elements in the stream.                                  |
+| `anyMatch(Predicate<T>)`                | Returns `true` if **any** element matches the predicate.                       |
+| `allMatch(Predicate<T>)`                | Returns `true` if **all** elements match.                                      |
+| `noneMatch(Predicate<T>)`               | Returns `true` if **no** element matches.                                      |
+| `findFirst()`                           | Returns the **first** element in the stream (optional).                        |
+| `findAny()`                             | Returns **any** element (useful in parallel streams).                          |
+
+__________________________________________________________________________________________________
+
+Different ways to create a stream:
+
+1. From Collection:
+
+List<Integer> salaryList = Arrays.asList(3000, 4100, 9000, 1000, 3500);
+Stream<Integer> streamFromIntegerList = salaryList.stream();
+
+2. From Array:
+
+Integer[] salaryArray = {3000, 4100, 9000, 1000, 3500};
+Stream<Integer> streamFromIntegerArray = Arrays.stream(salaryArray);
+
+3. From Static Method:
+
+Stream<Integer> streamFromStaticMethod = Stream.of(1000, 3500, 4000, 9000);
+
+4. From Stream Builder:
+
+Stream.Builder<Integer> streamBuilder = Stream.Builder();
+streamBuilder.add(1000).add(9000).add(3500);
+
+Stream<Integer> streamFromStreamBuilder = streamBuilder.build();
+
+5. From Stream Iterate:
+
+Stream<Integer> streamFromIterate = Stream.iterate(1000, (Integer n) -> n + 5000).limit(5);
+
+__________________________________________________________________________________________________
+Different Intermediate Operations:
+
+We can chain multiple intermediate operations together to perform more complex processing before
+applying terminal operation to produce the result.
+
+
+1. filter(Predicate<T> predicate)
+  
+Stream<String> nameStream = Stream.of("HELLO", "EVERYBODY", "HOW", "ARE", "YOU", "DOING");
+Stream<String> filteredStream = nameStream.filter((String name) -> name.length() <= 3);
+
+List<String> filteredNameList = filteredStream.collect(Collectors.toList());
+// prints HOW, ARE, YOU
+
+2. map(Function<T,R> mapper)
+
+Stream<String> nameStream = Stream.of("HELLO", "EVERYBODY", "HOW", "ARE", "YOU", "DOING");
+Stream<String> filteredNames = nameStream.map((String name) -> name.toLowerCase()); 
+// will print all names in lowecase.
+
+3. flatMap(Function<T, Stream<R>> mapper)
+
+List<List<String>> sentenceList = Arrays.asList(
+      Arrays.asList("I","LOVE","JAVA"),
+      Arrays.asList("CONCEPTS","ARE","CLEAR"),
+      Arrays.asList("ITS","VERY","EASY")
+);
+
+Stream<String> wordsStream1 = sentenceList.stream()
+                                          .flatMap((List<String> sentence) -> sentence.stream());
+
+Stream<String> wordsStream1 = sentenceList.stream()
+                                          .flatMap((List<String> sentence) -> sentence.stream().map((String value) -> value.toLowerCase()));
+
+__________________________________________________________________________________________________
+
+4. distinct()
+- removes duplicate from the stream
+
+Integer[] arr = {1,5,2,,7,4,4,2,0,9};
+
+Stream<Integer> arrStream = Arrays.stream(arr).distinct();
+
+__________________________________________________________________________________________________
+5. sorted()
+Integer[] arr = {1,5,2,,7,4,4,2,0,9};
+
+Stream<Integer> arrStream = Arrays.stream(arr).sorted((Integer val1, Integer val2) -> val2 - val1);
+__________________________________________________________________________________________________
+6. peek(Consumer<T> action)
+
+Stream<Integer> numberStream = numbers.Stream()
+                                      .filter((Integer val) -> val > 2)
+                                      .peek((Integer val) -> System.out.println(val))
+                                      .map((Integer val) -> -1*val);
+List<Integer>  numberList = numberStream.collect(Collectors.toList());
+
+__________________________________________________________________________________________________
+7. skip(long n)
+  // Skip the first n elements of the stream
+List<Integer> numbers = Arrays.asList(2,1,3,4,6);
+Stream<Integer> numberStream = numbers.Stream().skip(3);
+
+List<Integer> numberList = numberStream.collect(Collectors.toList());
+__________________________________________________________________________________________________
+
+8. mapToInt(ToIntFunction<T> mapper)
+
+int[] numberArray = Arrays.asList("2","1","4","3");
+
+int[] numbersArray = {2,1,4,7};
+
+IntStream numberStream = Arrays.stream(numbersArray);
+numberStream.filter((int val) -> val>2);
+
+int[] filteredArray = numberStream.toArray();
+__________________________________________________________________________________________________
+10. mapToLong(ToLongFunction<T> mapper)
+
+11. mapToDoubleFunction(ToDoubleFunction<T> mapper)
+__________________________________________________________________________________________________
+
+Why we call intermediate operations as Lazy?
+
+They do not execute immediately when called.
+Instead, they build a processing pipeline.
+Actual processing happens only when a terminal operation is invoked.
+__________________________________________________________________________________________________
+
+Sequence of Stream Operations
+
+filter -> peek -> map -> peek -> sorted -> peek
+
+List<Integer> numbers = Arrays.asList(2,1,4,7,18);
+
+Stream<Integer> numberStream = numbers.stream()
+                .filter((Intger val)-> val >= 3)
+                .peek((Integer val)-> System.out.println("after filter: "+val))
+                .map((Integer val)-> val*2)
+                .peek((Integer val)-> System.out.println("after map: "+val))
+                .sorted((Integer val1, Integer val2)-> val2-val1)
+                .peek((Integer val)-> System.out.println("after sorted descending: "+ val));
+
+List<Integer> filteredNumberList = numberStream.collect(Collectors.toList());
+__________________________________________________________________________________________________
+
+
+
+

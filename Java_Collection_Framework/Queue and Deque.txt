@@ -1,0 +1,136 @@
+Queue 
+
+- Queue is an interface, child of Collection interface.
+- Generally Queue follows FIFO approach, but there are exceptions like PriorityQueue
+- Supports all the methods available in Collection + some other methods mentioned below.
+
+1. add()
+- Insert the element into the queue
+- True if insertion is successful else returns Exception if insertion fails
+- Null element insertion is not Allowed, will throw NullPointerException
+
+2. offer()
+- Insert the element into the queue
+- True if insertion is successful else returns False if insertion fails.
+- Null element insertion is not allowed and will throw NullPointerException
+
+3. poll()
+- Retrives and removes the head of the queue
+- Returns Null if Queue is Empty
+
+4. remove()
+- Retrives and removes the head of the queue
+- Returns Exception (NoSuchElementException) if queue is empty
+
+5. peek()
+- Retrives the value present at the Head of the Queue but do not remove it.
+- Return null if Queue is Empty
+
+6. element()
+- Retrives the Value present at the Head of the queue but do not remove it
+- Returns Exception (NoSuchElementException) if queue is Empty
+________________________________________________________________________________________________________________________
+ 
+ PriorityQueue
+ Internally it uses a binary heap data structure, which is a complete binary tree 
+ where each node is smaller than its children (for a min-heap) or larger (for a max-heap).
+ 
+ 2 Types of PriorityQueue 
+	Minimum PriorityQueue
+	Maximum PriorityQueue
+	
+It is basesd on priority heap (Min Heap and Max Heap)
+Elements are ordered according to either Natural Ordering (by default/ lexographically) or by Comparator provided during queue defination.
+
+1. Minimum PriorityQueue
+  
+  PriorityQueue<Integer> minPQ = new PriorityQueue<>();
+  minPQ.add(5);
+  minPQ.add(2);
+  minPQ.add(8);
+  minPQ.add(1);
+  
+  // prints all the values
+  minPQ.forEach((Integer val)-> System.out.println(val));
+  // prints in this sequence -> 1, 2, 8, 5
+  
+  // Remove top element from the PQ and println
+  while(!minPQ.isEmpty()){
+		int val = minPQ.poll();
+		System.out.println("Removed from top: "+ val);
+		// 1 will be removed then 2 then 5 then 8
+  }
+  
+________________________________________________________________________________________________________________________
+
+2. Max PriorityQueue
+   
+   PriorityQueue<Integer> maxPQ = new PriorityQueue<>((Integer a, Integer b) -> b - a);
+   maxPQ.add(5);
+   maxPQ.add(2);   
+   maxPQ.add(8);   
+   maxPQ.add(1);
+   
+   maxPQ.forEach((Integer val) -> System.out.println(val));
+   
+   while(!maxPQ.isEmpty()){
+		int val = maxPQ.poll();
+		System.out.println("Removed from top: " + val);  // 8 will be removed then 5 then 2 then 1
+   }
+   ------------------------------------------------------------------------------------------
+	Time Complexities of PriorityQueue:
+	
+	Add and Offer - O(log n)
+	Peek - O(1)
+	Poll and Remove head element - O(log n)
+	Remove arbitary element - O(n)
+________________________________________________________________________________________________________________________  
+   
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

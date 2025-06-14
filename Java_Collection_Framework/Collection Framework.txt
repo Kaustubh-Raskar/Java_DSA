@@ -1,0 +1,70 @@
+Collection Framework -
+
+Collection extends Iterable interfaec -
+Iterable -> Collections -> List, Set, Queue
+
+Queue -> (Deque extends queue) -> ArrayDeque implements Deque
+                                 -> LinkedList implements both Deque and List interface
+	PriorityQueue implements Queue interface
+
+- Collection is a group of objects.
+- Present in Java.util package
+- Framework provides the architecture to manage these "group of objects" .i.e. add, update, delete, search etc
+
+Collection is basically a common interface which make read/write operations easier across the child objects of collection framework.
+------------------------------------------------------------------------------------------------------------------------------------------
+
+Iterable - Used to traverse the collection
+
+Below are the methods which are frequently used --
+1. Iterator() -> It returns the Iterator object, which provides methods to iterate the collection.
+
+Methods -
+hasNext() -> Returns True, if there are more elements in collection.
+next() -> Returns the next element in the iteration.
+remove() -> Removes the last element returned by Iterator.
+
+2. forEach() ->Iterates collection using Lambda expression, and the used lambda expression will be called for each element from the collection.
+
+Example -
+List<Integer> values = new ArrayList<>();
+
+Iterator<Integer> valuesIterator = values.iterator();
+while(valuesIterator.hasNext()){
+	int val = valuesIterator.next();
+	System.out.println(val);
+	
+	if(val == 3) valuesIterator.remove();
+	
+}
+
+for(int val : values){
+	System.out.println(val);
+}
+values.forEach((Integer val) -> System.out.println(val));
+------------------------------------------------------------------------------------------------------------------------------------------
+methods from collection framework -
+
+size()
+isEmpty()
+contains()
+toArray()
+add()
+remove()
+addAll() - to insert one collection to other collection.
+removeAll() - to remove all elements from collection.
+clear() - Removes all elements from the collection.
+equals() - Used to check if 2 collections are equal or not.
+stream() and parallelStream()
+iterator()
+------------------------------------------------------------------------------------------------------------------------------------------
+Collection vs Collections
+
+Collection -> Part of Java collection framework and its an interface, which expose various methods implemented by various collection classes like 
+ArrayList, LinkedList, Stack, Vector, etc.
+
+Collections -> collections is a utility class whcih provides static methods, which are used to operate on collections like 
+swapping , searching, reverse, copy, etc.
+Provides methods like - sort, binarySearch, get, reverse, shiffle, swap, copy, min and max.
+--------------------------------------------------------------------------------------------------------------------------------------------
+

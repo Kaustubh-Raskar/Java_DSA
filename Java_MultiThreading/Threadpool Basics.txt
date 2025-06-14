@@ -1,0 +1,80 @@
+Threadpool
+Threadpool is a collections of thread (aka worker threads) which gets assigned with application tasks based on threads availability.
+On completing the tasks worker threads can get back to threadpool and wait for the another task to get assigned.
+In this we can reuse the threads we have defined in the threadpool.
+
+Application submits the task to Threadpool as a Queue of tasks:
+In this queue each task waits for a Thread to be available in Threadpool.
+If all the Threads from Threadpool are busy then the pending tasks in queue has to wait for the thread to become available to perform them.
+Once any of the thread becomes available from the Threadpool then tasks gets assigned to the available Thread.
+
+Advantages:
+1. Threadpool provides reusable threads which avoids the traditional process of allocating space for each thread that we create.
+2. Threadpool abstracts away the thread state management complexity.
+3. Threadpool provides control over threads to avoid excess context switching.
+
+Flowchart of Executor
+
+Executor (Only 1 method - execute()) -> implements -> ExecutorService (Provides more methods)
+
+ExecutorService -
+ExecutorService -> implements -> ThreadPoolExecutor
+ExecutorService -> implements -> ForkJoinPool
+ExecutorService -> extends -> ScheduledExecutorService -> implements -> ScheduledThreadPoolExecutor
+
+----------------------------------------------------------------------------------------------------------------------------------------
+ThreadPoolExecutor
+
+Process -
+1. n number of Threads are defined in Threadpool
+2. Tasks are stored inside BlockingQueue<> Till the Thread becomes available.
+3. Task from the queue checks whether any thread is available or free to submit the task.
+4. If Thread is available then the Top task from queue gets assigned to the available thread from the Threadpool.
+5. When defining a Threadpool, we define a corePoolSize which means minimum number of Threads in the Threadpool in busy or idle state.
+6. If the min number of threads from threadpool are busy with the assigned task then threadpool creates more threads less than the MaximumPoolSize
+means max number of threads that threadpool can contain.
+7. If threadpool becomes full busy means if queue is full and all of the threads from threadpool are busy 
+then the upcoming task gets rejected from holding into queue or passing to the thread.
+8. When any of the Threads becomes free then the Task waiting in the queue gets assigned to the Available Thread in the Threadpool.
+
+ThreadPoolExecutor constructor arguments -
+
+ThreadPoolExecutor(
+corePoolSize,
+keepAliveTime,
+maximumPoolSize,
+BlockingQueue<> workQueue,
+ThreadFactory threadFactory,
+RejectedExecutionHandler handler
+)
+
+corePoolSize - Minimum number of threads a threadpool can have in busy or idle state.
+keepAliveTime - If allowCoreThreadTimeOut property is set to TRUE (by default its FALSE)
+                then idle Threads are kept alive till time specified by keepAliveTime.
+				Threads which are idle gets terminated after this time.
+maximumPoolSize - Maximum number of threads a threadpool can contain or create based on demand for tasks in queue.
+                   If the Threads within the corePoolSize limit are busy then threadpool can creates new threads less than the maximumPoolSize.
+
+If  number of threads == corePoolSize and queue is also full then new threads are created till the limit of maximumPoolSize.
+This threads gets terminated if idle for keepAliveTime.
+
+BlockingQueue - Used to hold the tasks, before they get picked by the available worker thread in the threadpool.
+- Bounded Queue - Queue with fixed capacity. (eg. ArrayBlockingQueue)
+- Unbounded Queue - Queue with no fixed capacity. (eg. LinkedBlockingQueue)
+
+ThreadFactory - Its factory for creating threads used by the ThreadPoolExecutor. Factory provides us an interface to -
+- to give custom thread name
+- to give custom thread priority
+- to set thread Daemon flag
+
+RejectedExecutionHandler - Handler for tasks are that are rejected by the Threadpool.
+Generally logging logic can be added here for debugging purpose.
+
+- new ThreadPoolExecutor.AbortPolicy -> Throws RejectedExecution Exception
+- new ThreadPoolExecutor.CallerRunsPolicy -> Executes the rejectes task in the caller thread 
+  (Thread that attempted to submit the task. eg. main thread)
+- new ThreadPoolExecutor.DiscardPolicy -> Silently discards tje rejected task, without throwing an exception
+- new ThreadPoolExecutor.DiscardOldestPolicy -> Discards the oldest task in the queue, to accomodate new task
+
+
+

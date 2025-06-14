@@ -1,0 +1,340 @@
+Map - 
+- Its an interface and its implementations are -
+  - HashMap: do not maintain the order.
+  - HashTable: Synchronized version of the HashMap.
+  - LinkedHashMap: Maintains the insertion order.
+  - TreeMap: sorts the data manually.
+
+- Objects that maps key to values.
+- Can not contain duplicate key.
+
+Methods available in Map interface -
+1. size() - returns the number of key-value pairs mapping present.
+2. isEmpty() - returns true: if map contains no key-value mapping else False.
+3. containsKey(Object key) - If given key is already present in the map then returns true else false.
+4. containsValue(Object value) - Returns true if one or more keys mapped to the specified value.
+5. get(Object key) - returns the value to which this key is mapped.
+6. pu(K key, V value) 
+- if Map: is already has the same key present then it will overwrite the value now provided.
+- do not have the key present: It will add new key-value mapping.
+7. remove(Object key)
+- removes the key-value mapping from the map for the specified key.
+8. putAll(Map<K,V> m)
+- insert the mappings from the specified map to this map.
+9. clear()
+- removes all the mappings from Map.
+10. Set<K> keySet()
+- returns the Set view of the Key contained in the Map.
+- Set is backed by the Map, so changes in the Map will be reflected in the Set and vice-versa.
+11. Collection<V> values() -
+- returns the collection of all the values.
+12. Set<Map.Entry<K,V>> entrySet() 
+- returns the Set view of the Key contained in the Map.
+- Set is backed by the Map, so changes in the Map, will be reflected in the Set and vice-versa.
+13. putIfAbsent(K key, V value)
+- if key already exists return the value already associated,
+  else create a new mapping with this key and value.
+14. getOrDefault(keu, defaultValue)
+- if key does not exist or value is null, it returns the default value.
+15. Entry sub-interface
+- Entry is the sub-interface of the Map.
+  So its accessed via Map.Entry
+  Methods it provides are:
+  1. getKey - returns the key
+  2. getValue - returns the value
+  3. int hashCode() - obtains the hashCode value
+  4. boolean equals(Object o) - used to compare the 2 objects
+
+HashMap
+
+- can store null key or value (HashTable do not contain null key or value)
+- HashMap do not maintain the insertion order.
+- Its not ThreadSafe (instead use ConcurrentHashMap or HashTable for ThreadSafe HashMap implementation.)
+
+Internal working of HashMap : 
+
+Whenever we create a HashMap internally an array of buckets gets created.
+Within every bucket, we contain a Node which further contains Hashcode, Key, Value and the referrence of next Node.
+So when we invoke the map.put(k,v) method, hash value of the key is calculated and mapped against the bucket.
+
+3 things can happen -
+1. If the bucket is empty then the Node is created with given key-value pair and reference of next Node is null.
+2. If the bucket is already filled and the equals method return true for the given key and the existing key, 
+   then the value within the Node is updated.
+3. If the bucket is filled equals method returns false then the new Node is created with the given key-value pair.
+   and it's referrence is updated within the existing Node. Hence, we have a Linked List of Nodes within this bucket.
+
+* What is Load Factor in HashMap 
+
+The loadFactor is a measure of how full the HashMap can get before it resizes (rehashes)
+its internal table (Array of buckets)
+
+Default value - 0.75f or 75 %
+
+Formula of Threshold
+Threshold = initial Capacity * loadFactor
+
+Threshold = when to resize.
+initial capacity = current size of internal array
+Load Factor = fraction
+
+Example -
+HashMap<String, String> map = new HashMap<>(16, 0.75f);
+
+lower load factor -> less collision, faster lookup, more space used.
+higher load factor -> more collisions, slower performance, less memory used.
+
+Eg->
+public class LoadFactorDemo {
+    public static void main(String[] args) {
+        // Initial capacity = 4, load factor = 0.75
+        // Threshold = 4 * 0.75 = 3
+        HashMap<Integer, String> map = new HashMap<>(4, 0.75f);
+
+        // Inserting entries
+        map.put(1, "One");
+        map.put(2, "Two");
+        map.put(3, "Three");
+
+        System.out.println("Map before rehashing: " + map);
+
+        // This 4th insert will trigger rehash (capacity will grow)
+        map.put(4, "Four");
+
+        System.out.println("Map after rehashing: " + map);
+    }
+}
+
+Time complexity:
+add: amortized O(1)
+remove: amortized O(1)
+get: amortized O(1)
+
+Note:
+In a Java HashMap, when too many collisions happen and a single bucket (index) gets too many entries (i.e., many keys end up in the same bucket due to same hashCode()), the bucket is initially implemented as a LinkedList. But if the number of entries in that bucket exceeds a threshold, it is converted into a balanced binary tree (TreeNode) to improve performance.
+
+** Contract Rules between hashCode() and equals()
+1. If two objects are equal (according to equals()), then they must have the same hashCode().
+a.equals(b) == true ⇒ a.hashCode() == b.hashCode()
+
+2. If two objects have the same hashCode(), they are not necessarily equal.
+a.hashCode() == b.hashCode() ⇒ a.equals(b) might be false (this is called a hash collision).
+
+3. If two objects are not equal (equals() returns false), they can still have the same or different hashCode().
+
+Example -
+
+import java.util.HashMap;
+
+class Person {
+    String name;
+    Person(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Person) {
+            return name.equals(((Person) o).name);
+        }
+        return false;
+    }
+    @Override
+	public int hashCode() {
+		return name.hashCode();
+	}
+}
+
+public class HashMapFailDemo {
+    public static void main(String[] args) {
+        HashMap<Person, String> map = new HashMap<>();
+
+        Person p1 = new Person("Alice");
+        Person p2 = new Person("Alice");
+
+        map.put(p1, "Engineer");
+
+        System.out.println("map.get(p1): " + map.get(p1)); // OK
+        System.out.println("map.get(p2): " + map.get(p2)); // returns "Engineer"
+    }
+}
+
+-----------------------------------------------------------------------------
+LinkedHashMap -
+
+Uses HashTable and DoublyLinkedList to maintain insertion order and access order if set to true.
+Time complexity: Average O(1)
+Hash Table - Stores key-value pairs in buckets based on the hash code of the key.
+             ThreadSafe version of HashMap.
+
+DoublyLinkedList - Every entry has a referrence of before and after pointers.
+
+Each entry in LinkedHashMap is of type:-
+static class Entry<K,V> extends HashMap.Node<K,V> {
+    Entry<K,V> before, after;
+}
+
+1. Insertion Order Mode (default):
+Elements are stored in the order they are inserted
+Useful when predictable iteration order is needed.
+
+2. Access Order Mode:
+Enabled using constructor:
+- LinkedHashMap(initialCapacity, loadFactor, true)
+Order changes on every get() operation — the accessed node is moved to the end.
+Useful for LRU cache implementations.
+
+Operations:
+put(key, value):
+- Hashing is done like in HashMap.
+- Adds to the end of the linked list.
+
+get(key):
+- If access order is true, moves the accessed node to the end of the list.
+
+remove(key):
+- Removes from the hash table and also updates before and after links.
+
+LinkedHashMap is not ThreadSafe and there is no thread safe version available for this.
+* ThreadSafe Version of LinkedHashMap can be implemented using collections
+- Map<Integer, String> map1 = Collections.synchronizedMap(new LinkedHashMap<>());
+-----------------------------------------------------------------------------------------------
+
+TreeMap
+
+- Map is sorted according to its natural ordering of its Key or by 
+Comparator provided during map creation.
+- Its based on Red-Black tree (Self balancing Binary Search Tree)
+- O(log n) time complexity of insert, remove, get operations as it uses Binary Search Tree.
+- by default it follows ascending order.
+
+Eg1:
+
+// For Decreasing order
+Map<Integer, String> map1 = new TreeMap<>((Integer key1, Integer key2) -> key2 - key1);
+map1.put(21,"KD");
+map1.put(11,"TM");
+map1.put(15,"HT");
+map1.put(7,"TJ");
+map1.forEach((Integer key, String value) -> System.out.println(key + ":" + value));
+
+---------------------------------------------------------------------------------------------
+
+SortedMap
+
+SortedMap<Integer, String> map2 = new TreeMap<>();
+map1.put(21,"KD");
+map1.put(11,"TM");
+map1.put(15,"HT");
+map1.put(7,"TJ");
+
+Methods available in SortedMap are as follow:
+
+SortedMap<K,V> headMap(K toKey);
+System.out.println(map2.headMap(13));
+
+SortedMap<K,V> tailMap(K fromKey);
+System.out.println(map2.tailMap(13));
+
+K firstKey();
+System.out.println(map2.firstKey());
+
+K lastKey();
+System.out.println(map2.lastKey());
+
+---------------------------------------------------------------------------------------------
+
+NavigableMap
+
+NavigableMap<Integer, String> map3 = new TreeMap<>();
+map3.put(1,"A");
+map3.put(21,"B");
+map3.put(23,"C");
+map3.put(141,"D");
+map3.put(25,"E");
+
+Methods available in NavigableMap:
+
+Map.Entry<K,V> lowerEntry(K key)
+- map.lowerEntry(23)
+- output: 21,B
+- returns the Entry(key, value both) node less than 23.
+  If there is no value then returns null
+
+lowerKey(K key)
+- map.lowerKey(23) -> output: 21
+- returns keys only less than 23. if no value then returns null.
+
+Map.Entry<K,V> floorEntry(K key)
+- map.floorEntry(24)  -> output: "23,C"
+- map.floorEntry(23)  -> output: "23,C"
+- returns the key and value both which less or equal than specified key
+  If no value then returns null.
+
+K floorKey(K key)
+- map.floorEntry(24)  -> output: "23"
+- map.floorEntry(23)  -> output: "23"
+- returns the key only which less or equal than specified key
+  If no value then returns null.
+
+Map.Entry<K,V> ceilingEntry(K key)
+- map.ceilingEntry(24)  -> output: "25,E"
+- map.ceilingEntry(23)  -> output: "23,C"
+- returns the key and value both which greater or equal than specified key
+  If no value then returns null.
+
+K ceilingKey(K key)
+- map.ceilingKey(24)  -> output: "25"
+- map.ceilingKey(23)  -> output: "23"
+- returns the key only which greater or equal than specified key
+  If no value then returns null.
+
+Map.Entry<K,V> higherEntry(K key)
+- map.higherEntry(24)  -> output: "25,C"
+- map.higherEntry(25)  -> output: "141,D"
+- returns the key and value both which greater than specified key
+  If no value then returns null.
+
+K higherKey(K key)
+- map.higherKey(24)  -> output: "25"
+- map.higherKey(25)  -> output: "141"
+- returns the key only which greater than specified key
+  If no value then returns null.
+
+Map.Entry<K,V>  firstEntry()
+- map.firstEntry(23) -> output: "1,A"
+- returns the least entry in the map below the specified key.
+- means returns the earliest entry from the map.
+
+Map.Entry<K,V>  lastEntry()
+- map.lastEntry(23) -> output: "141,D"
+- returns the last entry in the map below the specified key.
+- Returns undefined for an empty map.
+
+Map.Entry<K,V>  pollFirstEntry()
+- map.pollFirstEntry(23) -> output: "1,A" gets removed and displayed
+- removes and returns the least entry in the map below the specified key.
+- means removes and returns the earliest entry from the map.
+
+Map.Entry<K,V>  pollLastEntry() 
+- map.pollLastEntry(23) -> output: "141,D" gets removed and displayed
+- removes and returns the last entry in the map below the specified key.
+
+NavigableMap<K,V> descendingMap()
+- reverse the Map and returns.
+
+NavigableMap<K> navigableKeySet()
+- If TreeMap is sorted in ascending order then keys will come ascending else descending.
+
+NavigableMap<K> descendingKeySet()
+- If TreeMap is sorted in ascending order then keys will come descending else ascending.
+
+NavigableMap<K,V> headMap(K toKey,boolean inclusive)
+- map.headMap(23,true)
+- will returns all the key values till 23.
+
+NavigableMap<K,V> tailMap(K fromKey,boolean inclusive)
+- map.tailMap(23,true)
+- will returns all the key values from key 23.
+
+

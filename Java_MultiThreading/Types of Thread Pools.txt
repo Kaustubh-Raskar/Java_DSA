@@ -1,0 +1,121 @@
+
+FixedThreadPool -
+
+newFixedThreadPool method creates a thread pool executor with a Fixed number of Threads.
+
+Min and Max Pool  -> Same size
+Queue Size -> Unbounded Queue ( LinkedBlockingQueue<>)
+Thread Alive when Idle -> Yes
+When to Use -> Exact Info, how many Async task is needed
+Disadvantage -> Not good when workload is heavy, as it will lead to limited concurrency
+
+Implementation: 
+ExecutorService poolExecutor1 = Executors.newFixedThreadPool(5);
+poolExecutor1.submit(() -> "this is the async task");
+
+
+-----------------------------------------------------------------------------------------------------
+CachedThreadPool -
+
+newCachedThreadPool method creates a thread pool that creates a new thread as needed (dynamically).
+
+Min and Max Pool -> Min: 0 and Max: Integr.MAX_VALUE
+Queue Size -> Blocking queue with size 0
+Thread Alive when idle -> 60 Seconds
+When to use -> Good for handling short lived tasks.
+Disadavntages -> If Many long lived tasks are submitted rapidly, Threadpool can create so many threads might lead to increase memory usage.
+
+ExecutorService poolExecutor2 = Executors.newCachedThreadPool();
+poolExecutor2.submit(() -> "this is the async task")
+
+----------------------------------------------------------------------------------------------------------------
+
+SingleThreadExecutor -
+
+'newSingleThreadExecutor' creates Executor with just single worker thread.
+
+Min and Max -> Min: 1 and Max: 1
+Queue Size -> Unblocking Queue
+Thread Alive when idle -> Yes
+When to use -> When need to process tasks sequentially.
+Disadavntages -> No Concurrency at all.
+
+-----------------------------------------------------------------------------------------------------------------
+
+Work Stealing Pool Executor -
+
+- It creates a Fork-Join Executor.
+
+- Number of Threads depends upon the available processors or we can specify in the parameter.
+
+- There are 2 Queues :
+   - Submission Queue
+   - Work-Stealing queue for each thread (it's a dequeue)
+   
+- Steps :
+    - If all threads are busy, task would be placed in "Submission Queue". { or whenever we call submit() method, tasks goes into submission queue only)
+	- Lets say task1 picked by Thread A, and if 2 subtasks created using fork() method. Subtask 1 will be executed by Thread-A only and Subtask 2 will put into Thread-A work-stealing queue.
+	- If any other thread becomes free, and there is no task in Submission queue, it can "STEAL" the task from the other thread work-stealing queue.
+	
+- Task can be split into multiple small sub-tssks. For that Task should extend:
+  - RecursiveTask
+  - RecursiveAction
+ 
+We can create Fork-Join Pool using "newWorkStealingPool" method in ExecutorService.
+OR
+By calling ForkJoinPool.commonPool() method.
+
+WorkStealingPool Example:
+
+public class ExecutorUtilityExample{
+
+    public static void main(String [] args){
+      ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
+      Future<Integer> futureObj = pool.submit(new ComputeSumTask(0,100));
+
+      try{
+        System.out.println(futureObj.get());
+      } catch(Exception e){
+
+      }
+    }
+
+    class computeSumTask extends RecursiveTask<>{
+    
+      int start;
+      int end;
+
+      ComputeSumTask(int start, int end){
+        this.start = start;
+        this.end = end;
+      }
+
+      @Override
+      protected Integer compute(){
+        if(end - start <= 4){
+          int totalSum = 0;
+          for(int i = start; i <= end; i++){
+            totalSum += i;
+          }
+          return totalSum;
+        }
+        else{
+          // split the task
+          int mid = (start + end)/2;
+
+          ComputeSumTask leftTask = new ComputeSumTask(start, mid);
+          ComputeSumTask rightTask = new ComputeSumTask(mid + 1, end);
+
+          leftTask.fork();
+          rightTask.fork();
+
+          int leftResult = leftTask.join();
+          int rightResult = rightTask().join();
+
+          return leftResult + rightResult;
+        }
+
+      }
+    }      
+}
+

@@ -1,0 +1,101 @@
+Predefined Functional Interfaces -
+
+1. Predicate - uses 'test' method 
+Return type of Predicate is boolean.
+filter names starting with "A using Predicate -
+Example 1:
+Predicate<String> startsWithA = name -> name.startsWith("A");
+List<String> filtered = names.stream().filter(startsWithA)
+									  .collect(Collectors.toList());
+
+Example 2:
+find employees with name as "John" -
+List<Employee> result = names.stream().filter( emp -> "John".equalsIgnoreCase(emp.getName()))
+									  .collect(Collectors.toList());
+								  
+2. BiPredicate -
+
+BiPredicate<T,U>
+eg: check if employee's department matches a given department
+    and their salary is greater than 50,000.
+
+BiPredicate<String,Double> isEligible = (dept, salary) -> dept.equals("IT") && salary > 5000;
+System.out.println(isEligible.test("IT", 60000.0)); // true
+
+3. Function -
+You have a list of Employee objects. Convert them to a list of employee names.
+
+Function<Employee, String> getName = emp -> emp.getName();
+List<String> names = employees.stream()
+							   .map(getName)
+							   .collect(Collectors.toList());
+							   
+4. BiFunction -
+You want to calculate the total price using quantity and unit price.
+BiFunction<Integer,Double,Double> totalPrice =
+(qty, price) -> qty * price;
+double result = totalPrice.apply(5,20.5);
+
+5. Consumer - accept()
+
+Consumer<Customer> logCustomer = customer -> Sysout(customer);
+customers.forEach(logCustomer);
+
+6. BiConsumer<T, U>
+Scenario:
+Print customer name and their order total together.
+
+BiConsumer<String, Double> printDetails = (name, total) -> 
+    System.out.println("Customer: " + name + ", Total: $" + total);
+
+printDetails.accept("Alice", 250.75);
+
+7. Supplier - get()
+
+Supplier<String> otpSupplier = () -> String.valueOf((int)(Math.random() * 9000) + 1000);
+Sysout(otpSupplier.get());
+
+8. ToIntFunction<T>
+Scenario:
+Extract the age of a person from a Person object for analytics.
+
+ToIntFunction<Person> getAge = person -> person.getAge();
+int age = getAge.applyAsInt(new Person("Sam", 28));
+
+9. ToDoubleFunction<T>
+Scenario:
+Get the product's discount as a double value from a Product object.
+
+ToDoubleFunction<Product> getDiscount = product -> product.getDiscount();
+double discount = getDiscount.applyAsDouble(new Product("Laptop", 10.5));
+
+10. IntFunction<R>
+Scenario:
+Generate an array of a given size and fill it with default values.
+
+IntFunction<int[]> createArray = size -> new int[size];
+int[] arr = createArray.apply(5);  // new int[5]
+
+11. IntPredicate
+Scenario:
+Check if a number is even.
+
+IntPredicate isEven = num -> num % 2 == 0;
+System.out.println(isEven.test(10));  // true
+
+12. IntConsumer
+Scenario:
+Log each element of an int array.
+
+IntConsumer print = val -> System.out.println("Value: " + val);
+Arrays.stream(new int[]{1, 2, 3}).forEach(print);
+
+13. ObjIntConsumer<T>
+Scenario:
+Print the name of a product and its quantity ordered.
+
+ObjIntConsumer<String> orderDetails = (product, qty) -> 
+    System.out.println("Ordered: " + product + " x" + qty);
+
+orderDetails.accept("Book", 3);
+

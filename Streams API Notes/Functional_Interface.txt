@@ -1,0 +1,206 @@
+Functional Interface -
+Example 1 -
+interface NumericTest {
+	boolean test(int n);
+}
+
+psvm(){
+	// to check if num is even
+	NumericTest isEven = (n) -> (n % 2) == 0;
+	if(isEven.test(10)) Sysout(10 is even);
+
+   // to check if num is non-negative
+	NumericTest isNonNeg = (n) -> n >= 0;
+	n = -12;
+	if(isNonNeg.test(n)) sysout( n + " is non-negative) else ( n + " is negative");
+}
+
+Example 2 -
+
+interface NumericTest2 {
+	boolean test(int n, int d);
+}
+
+psvm(){
+	NumericTest2 isFactor = (n,d) -> (n % d) == 0;
+	
+	if(isFactor.test(10,2)) sysout("2 is a factor of 10") else ("2 is not factor of 10");
+}
+
+------------------------------------------------------------------------------------------------
+// Block lambdas -
+// A block lambda that commites tje factorial of an int value.
+
+interface NumericFunc {
+	int func(int n);
+}
+
+psvm(){
+	// this block lambdas computes the factorial of an int value
+	NumericFunc factorial = (n) -> {
+		int result = 1;
+		
+		for(int i=1; i <= n; i++){
+			result = i * result;
+		}
+		return result;
+	}
+	
+	int res = factorial.func(5); // 120
+	sysout(res);
+}
+
+// Block lambda that reverses the characters in a string
+interface StringFunc {
+	String func(String n);
+}
+
+// psvm(){
+	
+	StringFunc reverse = (str) -> {
+		String result = "":
+		int i;
+		
+		for(i = str.length()-1; i >= 0; i++){
+			result += str.charAt(i);
+		}
+		return result;
+	}
+	
+	String res = reverse.func("hello"); // olleh
+}
+------------------------------------------------------------
+
+Generic Functional interfaces -
+
+interface SomeFunc<T> {
+	T func(T t);
+}
+
+SomeFunc<String> reverse = (str) -> {
+	// code to reverse string
+	return result;
+}
+
+String res = reverse.func("Lambda");
+
+--------------------------------------------------------------
+// Using SomeFunc<T> to calculate factorial
+
+SomeFunc<Integer> factorial = (n) -> {
+	int result = 1;
+	
+	for(int i=1; i <= n; i++){
+		result = i * result;
+	}
+	return result;
+}
+
+int res = factorial.func(3);
+------------------------------------------------------------------------------
+
+Passing Lambda as arguments in methods -
+
+This method has a as the type of its first parameter.
+Thus, it can be passed a reference to any instance of that interface, including the instance created by lambda expression.
+The second parameter specifies the string to operate on -
+
+// Custom functional interface
+int StringFunc {
+	String func(String n);
+}
+
+// Method
+static String stringOp(StringFunc sf, String str){
+	return sf.func(str);
+}
+
+psvm(){
+	String inStr = "Lambda expression";
+	String outStr;
+	
+	outStr = stringOp((str) -> str.toUpperCase(), inStr);
+	
+	// Block lambda -
+	outStr = stringOp((str) -> {
+		String result = "";
+		int i;
+		
+		for(int i = str.length() -1; i >= 0; i--){
+			result += str.charAt(i);
+		}
+		return result;
+	}, inStr);
+	
+	sysout("reverse string is " + outStr);
+}
+-------------------------------------------------------------------------------
+Throw an exception from a lambda expression
+
+interface DoubleNumericArrayFunc {
+	double func(double[] n) throws EmptyArrayException;
+}
+
+class EmptyArrayException extends Exception {
+	EmptyArrayException(){
+		super(message);
+	}
+}
+
+psvm(String[]args) throws EmptyArrayException {
+	
+	double[] values = {1.0, 2.0, 3.0, 4.0};
+	
+	// block lambda computes the average of an array of doubles
+	DoubleNumericArrayFunc average = (n) -> {
+		double sum = 0;
+		
+		if(n.length == 0){
+			throw new EmptyArrayException();
+		}
+		for(int i=0; i < n.length; i++){
+			sum += n[i];
+		}
+		return sum/n.length;
+	};
+	
+	System.out.println("The average is "+ average.func(values));
+	System.out.println("The average is "+ average.func(new double[0])); // This will throw exception.
+}
+
+---------------------------------------------------------------------------------------------------------------
+Notes:
+The local variable can be used but cannot be modified in the lambda block expression.
+--------------------------------------------------------------------------------------------------
+Method references:
+
+to Static methods -
+interface StringFunc {
+	String func(String n);
+}
+
+class MyStringOps {
+	// A static method that reverses a String
+	static String strReverse(String str){
+		// code to reverse string
+		return result;
+	}
+}
+
+class MethodRefDemo {
+	static String stringOp(StringFunc sf,String s){
+		sf.func(s);
+	}
+	
+	psvm(){
+		String inStr ="hello world";
+		String outStr;
+		
+		outStr = stringOp(MyStringOps::strReverse,inStr);
+	}
+}
+---------------------------------------------------------------------------------
+
+
+
+

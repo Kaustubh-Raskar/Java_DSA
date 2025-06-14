@@ -1,0 +1,57 @@
+Immutable Java class -
+An immutable class is a class whose objects can’t be modified after creation. Once you set its fields, that’s it .
+
+Why Use Immutable Classes?
+Thread Safety – Immutable objects are automatically thread-safe. No locking needed. Bye-bye race conditions. 🧵🚫
+Cache-friendly – Can be safely cached or shared without issues.
+Easier to Reason About – Behavior doesn’t change. Predictable = peaceful coding. 🧘‍♂️
+HashMap/Set Friendly – Works perfectly as keys since their hashCode() won’t change.
+
+public final class Student {
+    private final String name;
+    private final int rollNumber;
+
+    public Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getRollNumber() {
+        return rollNumber;
+    }
+
+    // No setters! No way to change the state after creation.
+}
+
+Key Rules to Make a Class Immutable
+- Make the class final – No subclassing allowed.
+- All fields should be private and final.
+- No setters – Only getters.
+- If a field is a mutable object (like a list), return a deep copy in the getter.
+
+Example - String in Java is mostly used Immutable class / object.
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+Object class In Java - java.lang.Object
+The Object class is the parent class of all classes in Java. Like, 
+literally every class (even ones you make) inherits from it implicitly. No need to extend it manually.
+
+Method	Purpose :
+toString()	Gives string representation. You can override it for custom output.
+equals(Object obj)	Compares objects. You override it to compare values instead of references.
+hashCode()	Used in hashing (like with HashMap, HashSet). Should go hand-in-hand with equals().
+getClass()	Returns the runtime class info.
+clone()	Makes a field-for-field copy. (Careful: it needs Cloneable interface.)
+finalize()	Cleanup before GC—deprecated now. Don't rely on it.
+wait(), notify(), notifyAll()	Used for thread communication (synced methods). 
+
+Why It Matters
+- It makes polymorphism possible.
+- It gives every object a base set of tools.
+- Crucial for collections and anything using equals() / hashCode().
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+

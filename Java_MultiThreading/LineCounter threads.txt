@@ -1,0 +1,131 @@
+Line Counter
+
+package com.crio.xthreads.LineCounter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class App {
+    public static void main(String[] args) {
+        // Define the file names located in the resources folder
+        List<String> fileNames = List.of(
+            "file1.txt",
+            "file2.txt",
+            "file3.txt"
+        );
+
+        // TODO: Create an ExecutorService with a fixed thread pool
+        // 1. Initialize the ExecutorService with a fixed thread pool.
+        // 2. Set the number of threads in the pool to match the number of files.
+        // 3. This will allow each file to be processed concurrently.
+        ExecutorService executorService = Executors.newFixedThreadPool(fileNames.size());
+        List<Future<Integer>> futures = new ArrayList<>();
+
+        // TODO: Submit Callable tasks to the ExecutorService
+        // 1. Create a list to hold Future objects that represent the results of the tasks.
+        // 2. Iterate over the list of file names.
+        // 3. For each file, create a Callable task (FileLineCountTask) to count the number of lines in the file.
+        // 4. Submit each Callable task to the ExecutorService and obtain a Future object.
+        // 5. Add each Future object to the list of futures.
+        for (String fileName : fileNames) {
+            Future<Integer> future = executorService.submit(new FileLineCountTask(fileName));
+            futures.add(future);
+        }
+
+        // TODO: Aggregate results
+        // 1. Initialize a variable to keep track of the total line count.
+        // 2. Iterate over the list of Future objects.
+        // 3. For each Future, retrieve the result (line count for the corresponding file) and add it to the total line count.
+        // 4. Handle any potential exceptions that might occur during the retrieval of results.
+        int totalLines = 0;
+        for (Future<Integer> future : futures) {
+            try {
+                totalLines += future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                System.err.println("Error processing file: " + e.getMessage());
+            }
+        }
+    
+        // TODO: Shutdown the ExecutorService
+        // 1. Call shutdown() on the ExecutorService to prevent new tasks from being submitted.
+        // 2. This will also help release any resources associated with the ExecutorService.
+        executorService.shutdown();
+        // TODO: Output the total line count
+        // 1. Print out the total number of lines counted across all files.
+
+        System.out.println("Total number of lines: " + totalLines);
+
+    } 
+}
+
+
+package com.crio.xthreads.LineCounter;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.concurrent.Callable;
+
+public class FileLineCountTask implements Callable<Integer> {
+    private final String fileName;
+
+    public FileLineCountTask(String fileName) {
+        this.fileName = fileName;
+    }
+
+    @Override
+    public Integer call() throws IOException {
+        int lineCount = 0;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            if (inputStream == null) {
+                throw new IOException("File not found: " + fileName);
+            }
+            while (reader.readLine() != null) {
+                lineCount++;
+            }
+        }
+        return lineCount;
+    }
+}
+
+
+# Problem Statement
+
+## Title: Concurrent Line Counter
+
+### Objective: Implement a program that counts the number of lines in multiple text files concurrently.
+
+You are given several text files located in the resources folder. Your task is to develop a multi-threaded application that counts the number of lines in each file concurrently and provides the total line count across all files.
+
+The program should create a thread for each file, where each thread counts the lines in its assigned file and returns the count. The results from all threads should be aggregated to produce the total number of lines.
+
+### Output
+
+```bash
+Total number of lines: 9
+```
+
+# Implementation
+
+1. Implement `FileLineCountTask` Class:
+
+   - Define a constructor that takes the file name as a parameter.
+   - Implement the call method to:
+     - Open the file from the resources folder.
+     - Read the file line by line using BufferedReader.
+     - Count the lines and return the count.
+   - Handle any `IOException` that might occur during file operations.
+2. Implement `main` Method in `App` Class:
+
+   - Define a list of file names located in the `resources` folder.
+   - Create an `ExecutorService` with a fixed thread pool, where the number of threads matches the number of files.
+   - Submit `Callable` tasks to the `ExecutorService`, each responsible for counting lines in a specific file.
+   - Aggregate the results from all `Callable` tasks to get the total number of lines.
+   - Print the total line count.---

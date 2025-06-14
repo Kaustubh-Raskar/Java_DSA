@@ -1,0 +1,67 @@
+Streams examples -
+
+1. Find all employees from the IT department:
+
+List<Employees> itEmployees = employeeList.stream()
+								 .filter(emp -> emp.getDepartment().equalsIgnoreCase("IT"))
+								 .collect(Collectors.toList());
+								 
+2. Get the names of all employees joined after 2022
+
+List<String> names = employeeList.stream()
+					  .filter(emp -> emp.getDateOfJoining().compareTo(2022-12-31) > 0)
+					  .map(Employee::getFullName)
+					  .collect(Collectors.toList());
+
+3. Find the highest paid employee -
+
+Optional<Employee> highestPaid = employeeList.stream()
+								.max(Comparator.comparingDouble(Employee::getSalary());
+								
+4. Group Employees by department -
+
+Map<String, List<Employee>> byDepartment =
+employeeList.stream().collect(Collectors.groupingBy(Employee::getDepartment));
+
+5. Count employees in each department -
+
+Map<String, Long> departmentCount =
+employeeList.stream().collect(Collectors.groupingBy(Employee::getDepartment, Collectors.counting()));
+
+6. Get average salary by department -
+
+Map<String, Double> avgSalaryByDept =
+employeeList.stream().collect(Collectors.groupingBy(Employee::getDepartment, Collectors.averagingDouble(Employee::getSalary)));
+
+7. List employees sorted by joining date -
+
+Map<Employee> sortedByDate =
+employeeList.stream().sorted(Comparator.comparing(Employee::getDateOfJoining))
+			.collect(Collectors.toList());
+			
+8. Check if any employee earns more more than 90,000 -
+
+boolean hasHighEarner =
+employeeList.stream().anyMatch(emp -> emp.getSalary() > 90000);
+
+9. List all employee emails in uppercase
+
+List<Boolean, List<Employee>> partitioned =
+employeeList.stream().map(emp -> emp.getEmail().toUpperCase())
+.collect(Collectors.toList());
+
+10. Partition employees based on salary > 70000
+
+Map<Boolean, List<Employee>> partitioned =
+employeeList.stream().collect(Collectors.partitioningBy(emp -> emp.getSalary() > 70000));
+
+11. Find the Employee who joined earliest -
+
+Optional<Employee> earliest =
+employeeList.stream().min(Comparator.comparing(Employee::getDateOfJoining));
+
+12. Convert employee list to a Map<Id, name>
+
+Map<Integer, String> idToName =
+employeeList.stream().collect(Collectors.toMap(Employee::getId, Employee::getFullName));
+

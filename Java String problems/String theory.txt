@@ -1,0 +1,52 @@
+String 
+
+String is immutable object of Java.
+
+Eg1:
+String str1 = "Hello";
+str1.concat("World");
+System.out.println(str1); // This will print "Hello" only because String original cannot be modified.
+
+Eg2:
+String str1 = "Hello";
+String str2 = str1.concat("World");
+System.out.println(str2);  // This will print "HellowWorld" as we reassigned it to another String.
+This leads to poor performance as it creates Temporary String.
+
+--------------------------------------------------------------------------------------------------------------
+
+StringBuilder:
+mutable sequence of characters
+Can be used for Method Chaining:  sb.append("2").replace(1,3,"okay").reverse();
+But not Threadsafe.
+If code involves use of Multiple Threads and Tasks then StringBuilder may provide random results each time.
+StringBuilder is faster in performance than StringBuffer.
+
+Usecase: Single Threaded Apps.
+--------------------------------------------------
+StringBuilder sb = new StringBuilder();
+sb.append("Hello");
+sb.append(" World");
+System.out.println(sb.toString());  // Will print "Hello World"
+
+Eg. we can also append like this
+sb.append("Programming ").append("Fundamentals.");
+System.out.println(sb);  // prints "Programming Fundamentals."
+
+Other methods that StringBuilder provides are:
+sb.insert(1, "Java");
+sb.replace(1,3, "Bingo");
+sb.delete(1,4);
+sb.reverse();
+sb.charAt(0);
+sb.length();
+sb.substring(1,4);
+
+__________________________________________________________________________________________________
+
+StringBuffer: (Synchronization overhead)
+
+StringBuffer provides same methods as StringBuilder but StringBuffer is Threadsafe.
+As it provides ThreadSafety it is slower in performance than StringBuilder.
+
+Usecase: MultiThreaded Apps.

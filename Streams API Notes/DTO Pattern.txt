@@ -1,0 +1,25 @@
+DTO Pattern - Data Transfer Object
+
+Its a design pattern that allows you to transfer the data between different parts of your application.
+DTO's are simple objects that contain only data, and they do not contain any business logic.
+This makes them ideal for transferring data between different layers of your application, such as presentation layer and data access layer.
+
+Example -
+1) Client Application   <-> 2) DTO Class <-> 3) Mapper <-> 4) DB Entity
+1) ( HTML Page, APIs) <-> 2) CustomerDetailsDTO [ Name, Email, MobileNum, AccountNumber, AccountType, Branch Address] <-> 3) Mapper 
+
+3) Mapper <-> 4) DB Entity [Customer - Name, Email, MobileNum]
+3) Mapper <-> 4) DB Entity [Accounts - AccountNumber, AccountType, Branch Address]
+
+
+benefits of DTO class -
+1. Reduces Network traffic - DTOs can be used to batch up multiple pieces of data into a single object, which can reduce the number of network requests that need to be made. This can improve performance and reduce the load on your servers.
+2. Encapsulates serialization -DTOs can be used to encapsulate the serialization logic for transferring data over the wire. This makes it easier to change the serialization format in future, without having to make changes to the rest of the application.
+3. Decouples Layers - DTOs can be used to decouple the presentation layer from the data access layer. Makes it easier to change the presentation layer without having to change the data access layer.
+
+- We use the below annotations in DTO class -
+DTO class can be a exact copy of Entity Class without JPA Specific annotations like Column, Id
+- @Data can be used to declare Getters, Setters, toString, HashCode, equals
+- @Data annotation can be avoided to be used in Entity classes as it may disrupt the Spring data Jpa processing due to HashCode/ equals.
+
+

@@ -1,0 +1,102 @@
+Using instance method reference with different objects -
+
+// A functional interface that takes 2 arguments and returns a boolean result.
+interface MyFunc<T> {
+	boolean func(T v1, T v2);
+}
+
+// A class that stores the temperature high for the day.
+class HighTemp {
+	private hTemp;
+	
+	HighTemp(int hTemp){ this.hTemp = hTemp};
+	
+	// return true if the invoking HighTemp object has the same temperature as ht2
+	boolean sameTemp(HighTemp ht2){
+		return hTemp == ht2.hTemp;
+	}
+	
+	// return True if the invoking HighTemp object has a temperature that is less than ht2
+	boolean lessThanTemp(HighTemp ht2){
+		return hTemp < ht2.hTemp;
+	}
+}
+--------------------------------------------
+class InstanceMethWithObjectRefDemo {
+	
+	// A method that returns the number of occurrences of an object for which some criteria, as specified by the MyFunc parameter, is true.
+	static<T> int counter(T [] vals, MyFunc<T> f, T v){
+		int count = 0;
+		for(int i=0; i < vals.length; i++){
+			if(f.func(vals[i],v)) count++;
+		}
+		return count;
+	}
+	
+	psvm(){
+		
+		int count;
+		
+		//create an array of HighTemp criteria
+		HighTemp[] weekDayHighs = { new HighTemp(89), new HighTemp(82),
+									  new HighTemp(90), new HighTemp(89),
+									  new HighTemp(89), new HighTemp(91),
+									  new HighTemp(84), new HighTemp(83) };
+		
+		count = counter(weekDayHighs, HighTemp::sameTemp; new HighTemp(89)); 
+		// This will return - 3 days had a high of 89.
+
+				HighTemp[] weekDayHighs2 = { new HighTemp(32), new HighTemp(12),
+									  new HighTemp(24), new HighTemp(19),
+									  new HighTemp(18), new HighTemp(12),
+									  new HighTemp(-1), new HighTemp(13) };
+		
+		count = counter(weekDayHighs, HighTemp::lessThanTemp; new HighTemp(19)); 
+		// This will return - 5 days had a high of less than 19.
+		
+	}
+}
+
+// You can also refer to the superclass version of a method by use of super as below -
+super::nameOfMethod
+
+------------------------------------------------------------------------------------------------------------------------------
+Method Reference with Generics -
+
+interface MyFunc<T> {
+	int func(T[] vals, T v);
+}
+
+class MyArrayOps{
+	// generic Method countMatching()
+	static <T> int countMatching(T [] vals, T v){
+		int count = 0;
+		for(int i=0; i < vals.length; i++){
+			if(vals[i] == v){
+				count++;
+			}
+		}
+		return count;
+	}
+}
+
+class GenericMethRefDemo {
+	
+	static <T> int myOp(MyFunc<T> f, T[] vals, T v){
+		return f.func(vals,v);
+	}
+	psvm(){
+		Integer [] vals = {1,2,3,4,2,3,4,4,5};
+		
+		String [] strs = {"One, "Two, "Three", "Two"};
+		int count;
+		count = myOps(MyArrayOps::<Integer>countMatching, vals, 4);
+		sysout("vals contains " + count + "4s");
+		
+		count = myOps(MyArrayOps::<String>countMatching, strs, "Two");
+		sysout("strs contains " + count + "Twos");
+	}
+}
+------------------------------------------------------------------------------------
+
+

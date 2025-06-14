@@ -1,0 +1,21 @@
+ThreadPoolExecutor LifeCycle
+
+Running -> Shutdown -> Terminated
+        -> Stop -> Terminated
+
+
+Running 
+- EXECUTOR is in Running State and submit() method will be used to add a new task.
+
+Shutdown 
+- Executor do not accept new tasks, but continue to process existing tasks.
+- Once existing tasks are finished, executor moves to Terminate State. (Method: Shutdown())
+
+Stop (Force Shutdown) 
+- Executor do not accept new tasks.
+- Executor force stops all the existing tasks which are executing.
+- and once fully shutdown, it moves to Terminated State.
+
+Terminated - 
+- End of life for the particular ThreadPoolExecutor.
+- isTerminated() method verifies whether the particular ThreadPoolExecutor is terminated or not.

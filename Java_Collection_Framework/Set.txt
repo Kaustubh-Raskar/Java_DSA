@@ -1,0 +1,128 @@
+Java Collection - Set
+
+TreeSet implements NavigableSet 
+NavigableSet extends SortedSet 
+SortedSet extends  Set
+
+Also,
+HashSet implements Set
+LinkedHashSet implements Set
+
+Set Properties:
+    Collections of Objects, but it doesn't contains duplicate value (any only one 'null' value we can insert)
+    Unlike List, Set is not an Ordered Collection, means objects inside Set doesn't follow the insertion order.
+    Unlike List, Set cannot be accessed via index.
+
+What all methods SET interface contains:
+Set provides all the methods which are declared in Collections interface.
+
+size()
+isEmpty()
+contains()
+toArray()
+add(E element)
+- returns true, after it insert element in the set only if element is not already present.
+- else if same value is already present then it returns false. (overrides the same value)
+
+remove(E element)
+
+addAll(Collection c)
+- performs UNION of 2 Set Collection
+    Example:
+    set1 = [12,11,33,4]
+    set2 = [11,9,88,10,5,12]
+    set3 = set1 + set2 -> [112,11,33,4,9,88,10,5]
+
+removeAll(Collection c)
+setA.removeAll(setB) removes from setA all elements that are also in setB.
+
+- performs DIFFERENCE of 2 Set Collection.
+- Delete the values from Set which are present in another.
+- Returns true if the set was modified (i.e., any elements were actually removed).
+- Throws NullPointerException if the specified collection is null.
+
+Example:
+setA = [12,11,33,4]
+setB = [11,9,88,10,5,12]
+setA.removeAll(setB) 
+setA - setB = [33,4] -> // Deleted values from SetA which were matching with values in setB
+
+retainAll(Collection c)
+- performs intersection of 2 Set Collections. Returns element which are present in both.
+
+clear()
+equals()
+stream() and parallelStream()
+iterator()
+__________________________________________________________________________________________________
+
+HashSet:
+
+- Data structure used internally: HashMap
+HashMap<E, Object> map = new HashMap<>();
+
+During Add method invocation, it stores the element in the key part and in value it stores the dummy object
+map.put(element, new Object())
+
+- No guarantee that the order will remain constant.
+- HashSet is not threadASafe,
+newKeySet method from ConcurrentHashMap class is used to create a threadSafe Set.
+
+Example Implementing ThreadSafe HashSet
+
+ConcurrentHashMap concurrentHashMap = new ConcurrentHashMap<>();
+Set<Integer> threadSafeSet = concurrentHashMap.newKeySet();
+threadSafeSet.add(1);
+threadSafeSet.add(2);
+
+Iterator<Integer> iterator = threadSafeSet.iterator();
+
+while(iterator.hasNext()){
+
+    int val = iterator.next();
+    if(val == 1){
+        // Iteration, addition or other operations We can perform both operations using ThreadSafe HashSet 
+        threadSafeSet.add(9);
+    }
+}
+threadSafeSet.forEach((Integer val) -> System.out.println(val));
+
+
+// If we do multiple operations together using only HashSet then
+Compiler will throw ConcurrentModificationException.
+
+__________________________________________________________________________________________________
+
+LinkedHashSet
+
+- Internally uses LinkedHashMap
+- Maintains the insertion order of the element
+- Its not ThreadSafe
+- For ThreadSafe use as below:
+  Set<Integer> set = Collections.synchronizedMap(new LinkedHashSet<>());
+
+  __________________________________________________________________________________________________
+
+TreeSet
+
+Internally uses : TreeMap
+It cannot store null value
+
+
+__________________________________________________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
