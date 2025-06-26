@@ -1,0 +1,167 @@
+The `Collectors` class in Java provides a variety of predefined reduction operations that are useful for accumulating elements of a stream into different types of collections, summarizing them, or grouping them according to some classification. Here's a summary of the main methods provided in the `Collectors` class:
+
+### 1. **toCollection(Supplier<C> collectionFactory)**
+
+Collects elements into a custom collection provided by the factory function.
+
+* **Return Type**: `Collector<T, ?, C>`
+
+### 2. **toList()**
+
+Collects elements into a `List`.
+
+* **Return Type**: `Collector<T, ?, List<T>>`
+
+### 3. **toUnmodifiableList()**
+
+Collects elements into an unmodifiable `List` (added in Java 10).
+
+* **Return Type**: `Collector<T, ?, List<T>>`
+
+### 4. **toSet()**
+
+Collects elements into a `Set`.
+
+* **Return Type**: `Collector<T, ?, Set<T>>`
+
+### 5. **toUnmodifiableSet()**
+
+Collects elements into an unmodifiable `Set` (added in Java 10).
+
+* **Return Type**: `Collector<T, ?, Set<T>>`
+
+### 6. **joining()**
+
+Concatenates elements into a single `String`.
+
+* **Return Type**: `Collector<CharSequence, ?, String>`
+
+### 7. **joining(CharSequence delimiter)**
+
+Concatenates elements into a single `String` with a specified delimiter.
+
+* **Return Type**: `Collector<CharSequence, ?, String>`
+
+### 8. **joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix)**
+
+Concatenates elements into a single `String` with specified delimiter, prefix, and suffix.
+
+* **Return Type**: `Collector<CharSequence, ?, String>`
+
+### 9. **counting()**
+
+Counts the number of elements.
+
+* **Return Type**: `Collector<T, ?, Long>`
+
+### 10. **summarizingInt(ToIntFunction\<? super T> mapper)**
+
+Collects statistics (count, sum, min, average, max) for a `int`-producing function.
+
+* **Return Type**: `Collector<T, ?, IntSummaryStatistics>`
+
+### 11. **summarizingLong(ToLongFunction\<? super T> mapper)**
+
+Collects statistics for a `long`-producing function.
+
+* **Return Type**: `Collector<T, ?, LongSummaryStatistics>`
+
+### 12. **summarizingDouble(ToDoubleFunction\<? super T> mapper)**
+
+Collects statistics for a `double`-producing function.
+
+* **Return Type**: `Collector<T, ?, DoubleSummaryStatistics>`
+
+### 13. **averagingInt(ToIntFunction\<? super T> mapper)**
+
+Collects the average of a `int`-producing function.
+
+* **Return Type**: `Collector<T, ?, Double>`
+
+### 14. **averagingLong(ToLongFunction\<? super T> mapper)**
+
+Collects the average of a `long`-producing function.
+
+* **Return Type**: `Collector<T, ?, Double>`
+
+### 15. **averagingDouble(ToDoubleFunction\<? super T> mapper)**
+
+Collects the average of a `double`-producing function.
+
+* **Return Type**: `Collector<T, ?, Double>`
+
+### 16. **reducing(T identity, BinaryOperator<T> op)**
+
+Performs a reduction using a binary operator and an identity value.
+
+* **Return Type**: `Collector<T, ?, T>`
+
+### 17. **reducing(BinaryOperator<T> op)**
+
+Performs a reduction using a binary operator (without identity).
+
+* **Return Type**: `Collector<T, ?, Optional<T>>`
+
+### 18. **groupingBy(Function\<? super T, ? extends K> classifier)**
+
+Groups elements by a classifier function and returns a `Map<K, List<T>>`.
+
+* **Return Type**: `Collector<T, ?, Map<K, List<T>>>`
+
+### 19. **groupingBy(Function\<? super T, ? extends K> classifier, Collector\<? super T, A, D> downstream)**
+
+Groups elements by a classifier function and performs a downstream reduction.
+
+* **Return Type**: `Collector<T, ?, Map<K, D>>`
+
+### 20. **partitioningBy(Predicate\<? super T> predicate)**
+
+Partitions elements into two groups: true and false, based on a predicate.
+
+* **Return Type**: `Collector<T, ?, Map<Boolean, List<T>>>`
+
+### 21. **partitioningBy(Predicate\<? super T> predicate, Collector\<? super T, A, D> downstream)**
+
+Partitions elements into two groups (true/false) and applies a downstream reduction.
+
+* **Return Type**: `Collector<T, ?, Map<Boolean, D>>`
+
+### 22. **toMap(Function\<? super T, ? extends K> keyMapper, Function\<? super T, ? extends U> valueMapper)**
+
+Collects elements into a `Map<K, U>`.
+
+* **Return Type**: `Collector<T, ?, Map<K, U>>`
+
+### 23. **toUnmodifiableMap(Function\<? super T, ? extends K> keyMapper, Function\<? super T, ? extends U> valueMapper)**
+
+Collects elements into an unmodifiable `Map<K, U>` (added in Java 10).
+
+* **Return Type**: `Collector<T, ?, Map<K, U>>`
+
+### 24. **toMap(Function\<? super T, ? extends K> keyMapper, Function\<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction)**
+
+Collects elements into a `Map<K, U>` with a merge function for handling duplicates.
+
+* **Return Type**: `Collector<T, ?, Map<K, U>>`
+
+### 25. **toConcurrentMap(Function\<? super T, ? extends K> keyMapper, Function\<? super T, ? extends U> valueMapper)**
+
+Collects elements into a `ConcurrentMap<K, U>`.
+
+* **Return Type**: `Collector<T, ?, ConcurrentMap<K, U>>`
+
+### 26. **toConcurrentMap(Function\<? super T, ? extends K> keyMapper, Function\<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction)**
+
+Collects elements into a `ConcurrentMap<K, U>` with a merge function for handling duplicates.
+
+* **Return Type**: `Collector<T, ?, ConcurrentMap<K, U>>`
+
+### 27. **teeing(Collector\<? super T, ?, R1> downstream1, Collector\<? super T, ?, R2> downstream2, BiFunction\<? super R1, ? super R2, R> merger)**
+
+Applies two downstream collectors to each element and merges the results into one.
+
+* **Return Type**: `Collector<T, ?, R>`
+
+---
+
+This list includes methods that provide flexible collection operations, such as grouping, partitioning, summarizing, reducing, and creating various types of collections like `List`, `Set`, `Map`, and `ConcurrentMap`. The methods also handle advanced cases like unmodifiable collections, concurrent collections, and composite operations with multiple collectors.
