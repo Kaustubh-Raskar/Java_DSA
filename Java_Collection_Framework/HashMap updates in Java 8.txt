@@ -1,0 +1,38 @@
+ ✅ Key Updates in HashMap Since Java 8
+ 
+ 1. Bucket Structure Enhancement
+🔧 Before Java 8:
+Each bucket in the HashMap was a Linked List of entries (Node<K,V>).
+
+In case of hash collisions, all entries went into the same bucket and were linearly traversed.
+
+Time complexity in worst case: O(n) per bucket lookup.
+
+🔧 After Java 8:
+If a bucket has more than 8 nodes (TREEIFY_THRESHOLD) and the map size is >= 64 (MIN_TREEIFY_CAPACITY), the Linked List is converted to a Red-Black Tree.
+
+This drastically improves lookup time for large collisions from O(n) to O(log n).
+
+✅ New hybrid structure: Linked List + Red-Black Tree
+
+2. hash() Method Improvement
+Java 8 introduced a more uniformly distributed hash function inside HashMap::hash() to reduce collisions.
+
+static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+
+ 3. Balanced Tree in Buckets (Red-Black Tree)
+When bucket count reaches TREEIFY_THRESHOLD = 8, the internal list in the bucket is transformed to a Red-Black Tree.
+Improves lookup, insert, and delete performance in heavily collided buckets.
+
+ 4. TreeNode Class Added
+A private inner class TreeNode<K,V> was added in HashMap, which extends LinkedHashMap.Entry<K,V>.
+It contains the necessary structure for Red-Black tree logic.
+
+Threshold Constants (Java 8+)
+Constant	Description
+TREEIFY_THRESHOLD = 8	When to convert list to tree
+UNTREEIFY_THRESHOLD = 6	When to convert tree back to list
+MIN_TREEIFY_CAPACITY = 64	Minimum table size before treeification

@@ -1,0 +1,88 @@
+Process -
+Process is an instance of a program that is getting executed.
+It has its own resource like memory, Thread etc. OS allocate these resources to Process when its created.
+
+Compilation: Generates bytecode that can be executed by JVM.
+-> Execution: at this point JVM starts the new process, here Test is the class which has "public static void main(String args[]) method.
+
+How much Memory does process gets?
+While creating A new JVM instance will get created and we can tell how much heap memory to be allocated.
+Every process gets its own Heap memory.
+
+Thread -
+Thread is known as Lightweight process.
+or Smallest sequence of instructions that are executed by CPU independently.
+- And 1 process can have multiple Thread.
+- When a process is created, it starts with 1 Thread and that initial Thread known as 'Main Thread' and from that we can create multiple threads to perform
+  task concurrently.
+
+Thread.currentThread().getName()
+_________________________________________________________________________________________________________________________________________________________________________
+
+More on Process and Threads:
+
+JVM has Heap and Stack and Code Segment, Data Segment, Registers, Program counters.
+Whenever a Process is created a New JVM Instance is allocated to the Process.
+
+Heap size allocation:
+java -Xms256m -Xmx2g MainClassName
+
+-Xms<size>: Min Heap Size
+This will set the initial heap size, above, I allocated 256MB
+
+-Xmx<size>: Max Heap Size
+Max heap size, process can get, above I allocated 2GB, if tries to allocate more memory, "OutOfMemoryError" will occur.
+
+Code Segment
+- Contains the compiled BYTECODE (i.e.machine code) of the Java Program
+- Its read only
+- All threads within the same process, share the same code Segment.
+
+Data Segment
+- Contains the GLOBAL and STATIC variables
+- All Threads within the same process, share the same data segment.
+- Threads can read and modify the same data.
+- Synchronization is required between multiple threads.
+
+Heap
+- Objects created at runtime using 'new' keyword are allocated in the heap
+- Heap is shared among all the threads of the same process (but NOT WITHIN Process)
+  (Let's say in Process1, X8000 heap memory pointing to same location in physical memory, same X8000 heap memory points to different location of process2)
+- Threads can read and modify the heap data
+- Synchronization is required between multiple Threads
+
+Stack
+- Each Thread has its own Stack
+- It manages, method calls, local variables
+
+Register
+- When JIT(Just In Time) compiles converts the bytecode into native machine code, it uses Register
+  to optimize the generated machine code.
+- Also helps in context switching
+- Each Thread has its own Register
+
+Counter
+- Also known as Program Counter, it points to the instruction which is getting executed.
+- Increments its counter after successfully execution of the instruction.
+
+All of the above are managed by JVM.
+_________________________________________________________________________________________________________________________________________________________________________
+
+MultiThreading -
+- Allows a program to perform multiple task at the same time
+- Multiple threads share the same resource such as memory space but still can perform task independently
+
+Benefits:
+- Task parallelism
+- Responsiveness
+- Resource Sharing
+
+Challenges:
+- Concurrency issue like deadlock, data inconsistency etc.
+- Synchronized overhead
+- Testing and Debugging is difficult
+_________________________________________________________________________________________________________________________________________________________________________
+
+Thread creation ways -
+1. Using Runnable Interface
+2. Extending Thread class
