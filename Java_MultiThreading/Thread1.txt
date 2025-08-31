@@ -86,3 +86,416 @@ ________________________________________________________________________________
 Thread creation ways -
 1. Using Runnable Interface
 2. Extending Thread class
+
+-------------------------------------------------------------------------------------------------------
+1. Using Runnable Interface - (Mostly used methodology in India), also by Netflix.
+- Thread class uses Runnable interface which contains run() method.
+- Thread class then contains these methods: init(), run(), sleep(), start(), stop(), interrupt(), etc
+
+- Another class which have some tasks that needs to be performed by Threads implements Runnable interface.
+- Runnable class provide run() method which Thread invokes to execute the task
+- Note: Class with Runnable Interface implemented is not a Thread.
+- 
+Example:
+
+Step 1: Creating a class with Runnable to define task
+public class MultiThreadingLearning implements Runnable{
+    @Override
+    public void run(){
+        System.out.println("Code executed by thread: " + Thread.currentThread().getName());
+    }
+}
+
+Step 2: Starting Thread to invoke run class from MultiThreading class
+- Create an instance of class that implements Runnable (MultiThreadingLearning)
+- Pass the Runnable object to the Thread constructor
+- Start the Thread
+
+public class Main{
+    public static void main(String args[]){
+        System.out.println("Going inside main method: " + Thread.currentThread.getName());
+        MultiThreadingLearning runnableObj = new MultiThreadingLearning();
+        Thread thread = new Thread(runnableObj);
+        thread.start();
+        System.out.println("Finish main method: " + Thread.currentThread().getName());
+    }
+}
+
+Output:
+Going inside main method: main
+Finish main method: main
+code executed by thread: Thread-0
+
+Thread checks if runnableObj passed in constructor contains run method.
+Note: Thread class constructor takes Runnable Object as parameter
+------------------------------------------------------------------------------------------------------------------
+2. Using extending Thread class
+
+Directly extending MyClass() with Thread class which have tasks to be performed by Threads.
+
+Class which extends Thread class, also becomes Thread or subclass of Thread.
+
+Example:
+Step 1: Create a Thread subclass
+Creating a class with Thread
+
+public class MultiThreadingLearning implements Thread{
+    @Override
+    public void run(){
+        System.out.println("Code executed by thread: " + Thread.currentThread().getName());
+    }
+}
+
+Step 2: Initiate and Start the Thread
+- Create an instance of the subclass
+- Call the start() method to begin the execution
+
+public class Main{
+    public static void main(String args[]){
+        // We don't need to create Thread class instance now and passing the object to it.
+        // As MultiThreadingLearning class already supporting Thread class
+        System.out.println("Going inside main method: " + Thread.currentThread.getName());
+        MultiThreadingLearning myThread = new MultiThreadingLearning();
+        myThread.start();       // Now object can Directly use Thread methods without seprately 
+        System.out.println("Finish main method: " + Thread.currentThread().getName());
+    }
+}
+Output:
+Going inside main method: main
+Finish main method: main
+code executed by thread: Thread-0
+_________________________________________________________________________________________________________________________________________________________________________
+
+Java Thread Lifecycle
+
+1. New (Created)
+
+Thread object is created using new Thread().
+Not yet started.
+
+➡️ Moves to Runnable when you call start().
+
+2. Runnable (Waiting for CPU)
+
+The thread is ready to run but waiting for CPU time.
+Scheduler decides when it gets CPU.
+
+➡️ Moves to Running when the CPU is assigned.
+➡️ Can also move to Blocked, Waiting, or Timed Waiting depending on situation.
+
+3. Running (Got CPU)
+
+The thread is executing its run() method.
+
+➡️ Goes back to Runnable if yield() is called.
+➡️ Goes to Terminated when run() finishes.
+➡️ Can go to Waiting, Timed Waiting, or Blocked depending on operations like sleep(), wait(), join(), or I/O.
+
+4. Blocked
+
+The thread is waiting to acquire a lock or finish an I/O task.
+If Thread wants to lock on a resource which is locked by other thread,it has to wait.
+➡️ Returns to Runnable once the lock is acquired or I/O is done.
+Note: When the Thread goes to Blocked state It releases all the Monitor Locks.
+
+5. Waiting
+
+Thread is waiting indefinitely when we call wait() method, make it non runnable until another thread signals it using (notify() or notifyAll()).
+➡️ Returns to Runnable once notified.
+Note: Releases all the Monitor Locks
+
+6. Timed Waiting
+
+Thread is waiting for a specific period of time (using sleep(milliseconds), join(milliseconds), or wait(milliseconds)).
+➡️ Returns to Runnable when the time expires or join completes.
+
+Note: Do not releases Monitor Locks
+
+7. Terminated (Dead)
+
+The thread has finished executing.
+Cannot be restarted.
+
+******Summary Flow:
+
+New → (start()) → Runnable → (scheduler) → Running → (finish run()) → Terminated
+While Running, it may also move to Blocked, Waiting, or Timed Waiting, and then back to Runnable.
+_________________________________________________________________________________________________________________________________________________________________________
+
+MONITOR LOCK :
+
+Every Java object has a built-in monitor lock (also called an intrinsic lock).
+When a thread enters a synchronized block/method, it acquires the monitor lock of that object.
+Other threads trying to enter a synchronized block on the same object are blocked until the lock is released.
+It helps to make sure that only 1 Thread goes inside a particular section of code.
+
+When 2 or more Threads are dependent on the same resource/object
+Thread1 acquires a Monitor lock over the required resource and once Thread1 completes its task then the resource is released for other dependent Threads.
+
+Example – With Synchronization (Using Monitor Lock)
+
+class Counter {
+    private int count = 0;
+
+    // synchronized ensures monitor lock is acquired before execution
+    public synchronized void increment() {
+        count++;
+    }
+
+    public synchronized int getCount() {
+        return count;
+    }
+}
+
+public class MonitorLockExample {
+    public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + counter.getCount());
+    }
+}
+
+👉 Always prints 2000, because:
+
+When t1 enters increment(), it locks the Counter object monitor.
+t2 must wait until the lock is released.
+Once t1 finishes, the lock is released, and t2 can proceed.
+
+⚡ Key Notes:
+
+synchronized → acquires and releases monitor lock automatically.
+Locks are per object, not per method.
+If one thread holds the lock, other threads are blocked until it’s released.
+Deadlocks can occur if multiple locks are mismanaged.
+_________________________________________________________________________________________________________________________________________________________________________
+
+Join() method:
+
+What is join()?
+    join() is a method in the Thread class.
+    When one thread calls t.join() on another thread t, it tells the current thread:
+    👉 “Wait here until thread t finishes execution.”
+
+Example Without join():-
+    public class WithoutJoinExample {
+        public static void main(String[] args) {
+            Thread t1 = new Thread(() -> {
+                for (int i = 1; i <= 5; i++) {
+                    System.out.println("Thread 1: " + i);
+                    try { Thread.sleep(500); } catch (InterruptedException e) {}
+                }
+            });
+
+            t1.start();
+
+            // Main thread continues immediately without waiting
+            System.out.println("Main thread finished work!");
+        }
+    }
+
+Possible Output:
+    Main thread finished work!
+    Thread 1: 1
+    Thread 1: 2
+    Thread 1: 3
+    Thread 1: 4
+    Thread 1: 5
+-- Here, the main thread ends before t1 finishes.
+________________________________________________________________________________________________________
+Example With join()
+    public class JoinExample {
+        public static void main(String[] args) throws InterruptedException {
+            Thread t1 = new Thread(() -> {
+                for (int i = 1; i <= 5; i++) {
+                    System.out.println("Thread 1: " + i);
+                    try { Thread.sleep(500); } catch (InterruptedException e) {}
+                }
+            });
+
+            t1.start();
+
+            // Main thread waits until t1 finishes
+            t1.join();
+
+            System.out.println("Main thread finished after t1!");
+        }
+    }
+
+✅ Output:
+    Thread 1: 1
+    Thread 1: 2
+    Thread 1: 3
+    Thread 1: 4
+    Thread 1: 5
+    Main thread finished after t1!
+
+-- Now, the main thread waits for t1 to finish before proceeding.
+---------------------------------------------------------------------------------
+🔹 Overloaded Versions
+
+join() → Waits until the thread finishes.
+join(long millis) → Waits for at most millis time.
+join(long millis, int nanos) → Waits for a specific time (down to nanoseconds).
+
+If the thread finishes earlier, the waiting thread continues immediately.
+
+🔹 Example: join(long millis)
+public class JoinMillisExample {
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(() -> {
+            for (int i = 1; i <= 10; i++) {
+                System.out.println("Thread 1: " + i);
+                try { Thread.sleep(500); } catch (InterruptedException e) {}
+            }
+        });
+
+        t1.start();
+
+        // Main thread will wait at most 2000 ms (2 sec) for t1
+        t1.join(2000);
+
+        System.out.println("Main thread continues (even if t1 is not finished).");
+    }
+}
+
+🔹 Summary
+
+join(long millis) = wait for either: (Main thread continues (even if t1 is not finished).)
+The thread finishes OR
+The given time expires 
+Whichever happens first.
+________________________________________________________________________________________________________
+
+Realtime Example:
+
+public class SharedResource{
+
+    boolean itemAvailable false;
+
+    //Synchronized put the monitor lock
+    public synchronized void addItem(){
+        itemAvailable = true;
+        System.out.println("Item added by: " + Thread.currentThread().getName() + " and invoking all threads which are waiting");
+        notifyAll();
+    }
+
+    public synchronized void consumeItem(){
+        System.out.println("consumeItem method invoked by: " + Thread.currentThread().getName());
+
+        // using while loop to avoid "spurious wake-up", sometimes because of system noise
+        while(!itemAvailable){
+            try{
+                System.out.println("Thread " + Thread.currentThread().getName() + " is waiting now");
+                wait(); // It releases the monitor lock
+            } catch(Exception e){
+                // handle Exception here
+            }
+        }
+
+        System.out.println("Item consumed by: " + Thread.currentThread().getName());
+        itemAvailable = false;
+    }
+}
+
+public class ProduceTask implements Runnable{
+    SharedResource sharedResource;
+
+    ProduceTask(SharedResource resource){
+        this.sharedResource = resource;
+    }
+
+    @Override
+    public void run(){
+        System.out.println("Producer thread: " + Thread.currentThread().getName());
+        try{
+            Thread.sleep(5000l);
+        }catch(Exception e){
+            // handle any Exception here
+        }
+        sharedResource.addItem();
+    }
+}
+
+public class ConsumeTask implements Runnable{
+    SharedResource sharedResource;
+
+    ConsumeTask(SharedResource resource){
+        this.sharedResource = resource;
+    }
+
+    @Override
+    public void run(){
+        System.out.println("Consumer thread: " + Thread.currentThread().getName());
+        sharedResource.consumeItem();
+    }
+}
+
+public class Main{
+    public static void main(String[] args){
+
+        System.out.println("Main Method Start");
+
+        SharedResource sharedResource = new SharedResource();
+
+        // producer thread
+        Thread producerThread = new Thread(new ProduceTask(sharedResource));
+
+        // consumer thread
+        Thread consumerThread = new Thread(new ConsumeTask(sharedResource));
+
+        // Thread is in Runnable state
+        producerThread.start();
+        consumerThread.start();
+
+        System.out.println("Main method end");
+
+    }
+}
+
+-- Console sequence:
+    Main Method Start
+    Main method end
+    Producer thread: Thread-0
+    Consumer thread: Thread-1
+    consumeItem method invoked by: Thread-1
+    Thread Thread-1 is waiting now
+    ... ~5 seconds pass ...
+    Item added by: Thread-0 and invoking all threads which are waiting
+    Item consumed by: Thread-1
+_________________________________________________________________________________________________________________________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
