@@ -1,0 +1,119 @@
+Assignment: Implement PRODUCER CONSUMER Problem:
+
+Question:
+Two Threads, a producer and a consumer, share a common, fixed-size buffer as a queue.
+The producer's job is to generate data and put it into the buffer, while the conumer's Job is to consume the data from the buffer.
+The data from the buffer
+The problem is to make sure that the producer won't produce data if the buffer is full, 
+and the consumer won't consume data if the buffer is empty.
+
+Solutions:
+public class SharedResource{
+
+    private Queue<Integer> sharedBuffer;
+    private int bufferSize;
+
+    public SharedResource(int bufferSize){
+        this.sharedBuffer = new LinkedList<>();
+        this.bufferSize = bufferSize;
+    }
+
+    // Producer Method
+    public synchronized void produce(int item) throws Exception{
+        // If buffer is full, wait for consumer to consume items
+        while(sharedBuffer.size() == bufferSize){
+            System.out.println("Buffer is full, Producer is waiting for consumer...");
+            wait();
+        }
+
+        sharedBuffer.add(item);
+        System.out.println("Produced: " + item);
+
+        // Notify the consumer that there are items to consume now
+        notify();
+    }
+
+    // Consumer Method
+    public synchronized void consume() throws Exception{
+        // If buffer is empty, wait for producer to produce items
+        while(sharedBuffer.isEmpty()){
+            System.out.println("Buffer is empty, Consumer is waiting for producer...");
+            wait();
+        }
+
+        int item = sharedBuffer.poll();
+        System.out.println("Consumed: " + item);
+
+        // Notify the producer that there is space in the buffer now
+        notify();
+        return item;
+    }
+}
+
+-------------------------------------------------------------------------------------------------
+public class ProducerConsumerLearning{
+    public static void main(String[] args){
+        SharedResource sharedResource = new SharedResource(3);
+
+        // Producer thread using lambda
+        Thread producerThread = new Thread(() -> {
+            for(int i = 1; i <= 6; i++){
+                try{
+                    sharedResource.produce(i);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // Consumer thread using lambda
+        Thread consumerThread = new Thread(() -> {
+            for(int i = 1; i <= 6;i++){
+                try{
+                    sharedBuffer.consume();
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        producerThread.start();
+        consumerThread.start();
+    }
+}
+-----------------------------------------------------------------------------
+🔹 Flow of the Program
+1. Shared Buffer
+
+A queue (size = 3) is used as a shared buffer between producer and consumer.
+If buffer is full → producer waits.
+If buffer is empty → consumer waits.
+Both methods (produce, consume) are synchronized, so only one thread at a time can access the buffer.
+
+2. Producer Thread
+
+Produces 6 items (1 → 6).
+If the buffer is full, it waits until the consumer consumes something.
+After producing, it calls notify() to wake up the consumer.
+
+3. Consumer Thread
+
+Consumes 6 items.
+If the buffer is empty, it waits until the producer produces something.
+After consuming, it calls notify() to wake up the producer.
+
+Ouput:
+Produced: 1
+Produced: 2
+Produced: 3
+Buffer is full, Producer is waiting for consumer...
+Consumed: 1
+Consumed: 2
+Consumed: 3
+Buffer is full, Producer is waiting for consumer...
+Produced: 4
+Produced: 5
+Produced: 6
+Consumed: 4
+Consumed: 5
+Consumed: 6

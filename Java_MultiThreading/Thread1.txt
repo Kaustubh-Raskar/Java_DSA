@@ -383,7 +383,20 @@ The thread finishes OR
 The given time expires 
 Whichever happens first.
 ________________________________________________________________________________________________________
+notify() and notifyAll()
 
+🔹 Where notify() is not safe
+
+If there are multiple consumers waiting, notify() may wake one thread that cannot proceed, while another thread could have. That may cause missed signals or deadlocks.
+
+In such multi-threaded scenarios, notifyAll() is safer.
+
+✅ Rule of thumb:
+
+Use notify() when there’s exactly one producer and one consumer.
+
+Use notifyAll() when multiple threads are waiting (multi-producer/consumer).
+________________________________________________________________________________________________________
 Realtime Example:
 
 public class SharedResource{

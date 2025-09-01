@@ -1,0 +1,116 @@
+Why Stop, Resume, Suspended methods are deprecated?
+
+STOP: Terminates the Thread abruptly, No lock release, No resource cleanup happens.
+SUSPEND: Put the Thread On Hold (Suspend) for temporarily.
+RESUME: Used to Resume the execution of Suspended Thread.
+Both this operation could lead to issues like deadlock.
+
+________________________________________________________________________________________________________
+
+ThreadPriority:
+
+- Priorities are integer ranging from 1 to 10
+1 - lowest priority
+2 - highest priority
+
+Eg: th1.setPriority(Thread.MAX_PRIORITY)
+
+- Even we set the Thread priority while creation, its not guaranteed to follow any specific order,
+  its just a hint to thread scheduler which to execute next. (but its not strict Rule)
+- When new thread is created, it inherit the priority of its Parent Thread.
+- We can set custom priority using "setPriority(int priority)" method.
+
+________________________________________________________________________________________________________
+
+Daemon Thread - 
+
+Background service thread in Java
+Its Job is to support non-daemon (user) threads.
+The JVM will exit as soon as all user threads finish, even if daemon threads still running.
+
+In short:
+
+User thread → main application work (e.g., handling requests, saving files).
+Daemon thread → background support (e.g., garbage collection, monitoring, housekeeping).
+
+-----------------------------------------
+🔹 Key Properties
+
+Default threads are user threads, not daemon.
+You can make a thread daemon using:
+
+    thread.setDaemon(true);
+
+(must be called before start()).
+JVM does not wait for daemon threads to finish when all 
+user threads are done.
+---------------------------------------------------------
+Example:
+
+public class DaemonThreadEg{
+    public static void main(String[] args){
+        System.out.println("Main thread started");
+
+        // Daemon Thread
+        Thread daemonThread = new Thread(() -> {
+            while(true){
+                System.out.println("DaemonThread is running...");
+                try(
+                    Thread.sleep(500);
+                )catch(InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // Mark as daemon
+        daemonThread.setDaemon(true);
+        daemonThread.start();
+
+        // User Thread
+        Thread userThread = new Thread(() -> {
+            System.out.println("User thread started");
+            try{
+                Thread.sleep(2000);
+            } catch(InterruptedException e){
+                e.printStackTrace();
+            }
+            System.out.println("User thread finished.);
+        });
+
+        userThread.start();
+
+        System.out.println("Main Thread finished.");
+    }
+}
+
+Expected Output (sample):
+    Main thread started
+    Main thread finished
+    Daemon thread is running...
+    User thread started
+    Daemon thread is running...
+    Daemon thread is running...
+    Daemon thread is running...
+    User thread finished
+
+Notice: After User thread finished, the JVM exits, 
+and daemon thread stops automatically (even though it had an infinite loop).
+
+-------------------------------------
+✅ In practice, daemon threads are used for things like:
+
+Garbage Collector
+Background monitoring
+Housekeeping tasks
+________________________________________________________________________________________________________
+Note:
+If the background thread is not daemon, the JVM waits forever (or until you manually stop the program), 
+because one user thread is still alive.
+
+🔹 Key Difference
+
+Daemon thread: JVM exits automatically once all user threads finish.
+User thread: JVM stays alive until this thread finishes 
+             (even if it runs forever).
+________________________________________________________________________________________________________
