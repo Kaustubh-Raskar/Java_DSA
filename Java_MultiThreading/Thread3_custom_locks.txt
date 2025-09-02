@@ -1,0 +1,409 @@
+    Locks and Semaphores:
+
+When multiple threads are using same object/resource then the object methods must use synchronized keyword.
+Else
+If Multiple Threads are working with Different objects or different instance of Objects then we have Custom Locks as below:
+1. Re-Entrant Lock
+2. Read Write
+3. Semaphores
+4. Stamped
+
+-- Locking do not depend on Objects like synchronized method.
+________________________________________________________________________________________________________
+
+Reentrant Lock:
+
+In this we have to make a ReentrantLock object to add a lock to method/task which will be used in different threads with different instance of same objects.
+Example:
+
+public class SharedResource{
+
+    boolean isAvailable = false;
+    
+    public void producer(ReentrantLock rLock){
+
+        try{
+            rLock.lock();
+            System.out.println("Lock acquired by: "+ Thread.currentThread().getName());
+            isAvailable = true;
+            Thread.sleep(4000);
+        }
+        catch(Exception e){
+
+        }finally{
+            rLock.unlock();
+            System.out.println("Lock release by: " + Thread.currentThread().getName());
+        }
+    }
+}
+-----------------------------------------------
+public class Main{
+    public static void main(String[] args){
+
+        ReentrantLock reentrantLock = new ReentrantLock();
+        SharedResource resource1 = new SharedResource();
+        Thread th1 = new Thread(() -> {
+            resource1.producer(reentrantLock);
+        });
+
+        SharedResource resource2 = new SharedResource();
+        Thread th2 = new Thread(() -> {
+            resource2.producer(reentrantLock);
+        });
+
+        th1.start();
+        th2.start();
+
+    }
+}
+
+Ouput:
+Lock acquired by: thread-0
+Lock release by:  thread-0 
+Lock acquired by: thread-1
+Lock release by:  thread-1
+
+Notes:
+As we seen in above example, even if different object instance are used still method is being used synchronizly,
+Only after thread-0 completes its Task then the resource gets unlocked for other thread to work.
+________________________________________________________________________________________________________
+
+ReadWrite Lock:
+
+ReadLock (Shared Lock) - More than 1 thread can acquire the read lock
+WriteLock (Exclusive Lock) - Only 1 thread can acquire the write lock
+
+When to Use:
+- When your read operations are very high in application and write operations are less
+
+import java.util.concurrent.locks.ReadWriteLock;
+
+public class SharedResource{
+
+    boolean isAvailable = false;
+    public void producer(ReadWriteLock lock){
+        try{
+            lock.readLock().lock();
+            System.out.println("Read Lock acquired by: " + Thread.currentThread().getName());
+            Thread.sleep(8000);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            lock.readLock().unlock();
+            System.out.println("Read Lock release by: " + Thread.currentThread().getName());
+        }
+    }
+
+    public void consumer(ReadWriteLock lock){
+        try{
+            lock.writeLock().lock();
+            System.out.println("Write Lock acquired by: " + Thread.currentThread().getName());
+            isAvailable = false;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            lock.writeLock().unlock();
+            System.out.println("Write Lock release by: " + Thread.currentThread().getName());
+        }
+    }
+} 
+
+--------------------------------------------
+public class Main{
+    public static void main(String[] args){
+
+        SharedResource resource = new SharedResource();
+        ReadWriteLock lock = new ReentrantReadWriteLock();
+
+        Thread th1 = new Thread(()->{
+            resource.producer(lock);
+        });
+
+        Thread th2 = new Thread(()->{
+            resource.producer(lock);
+        });
+
+        SharedResource resource1 = new SharedResource();
+        Thread th3 = new Thread(() -> {
+            resource1.consume(lock);
+        });
+
+        th1.start();
+        th2.start();
+        th3.start();
+    }
+}
+
+Output:
+ReadLock acquired by:  Thread-0
+ReadLock acquired by:  Thread-1
+ReadLock release by:  Thread-0
+ReadLock release by:  Thread-1
+WriteLock acquired by:  Thread-2
+WriteLock release by:  Thread-2
+________________________________________________________________________________________________________
+
+StampedLock: 
+
+Provides ReadWriteLock capability.
+Provides Optimistic Lock functionality. (Means there is No lock acquired)
+
+1. ReadWriteLock functionality:
+
+Example:
+public class SharedResource{
+
+    boolean isAvailable = false;
+    SharedLock lock = new StampedLock();
+
+    public void producer(){
+        try{
+            lock.readLock().lock();
+            System.out.println("Read Lock acquired by: " + Thread.currentThread().getName());
+            Thread.sleep(8000);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            lock.unlockRead(stamp);
+            System.out.println("Read Lock release by: " + Thread.currentThread().getName());
+        }
+    }
+
+    public void consumer(){
+        try{
+            long stamp = lock.writeLock();
+            System.out.println("Write Lock acquired by: " + Thread.currentThread().getName());
+            isAvailable = false;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            lock.unlockWrite(stamp);
+            System.out.println("Write Lock release by: " + Thread.currentThread().getName());
+        }
+    }
+} 
+--------------------------------------------
+public class Main{
+    public static void main(String[] args){
+
+        SharedResource resource = new SharedResource();
+
+        Thread th1 = new Thread(()->{
+            resource.producer();
+        });
+
+        Thread th2 = new Thread(()->{
+            resource.producer();
+        });
+
+        SharedResource resource1 = new SharedResource();
+        Thread th3 = new Thread(() -> {
+            resource1.consume();
+        });
+
+        th1.start();
+        th2.start();
+        th3.start();
+    }
+}
+--------------------------------------------------------------------
+2. Using Optimistic Lock functionality too
+Optimistic reads are for read-only critical sections that you later validate; if invalid, you re-read (or retry).
+
+public class SharedResource{
+    boolean isAvailable = false;
+    StampedLock slock = new StampedLock();
+
+    public void producer(){
+        long stamp = slock.tryOptimisticRead();
+        try{
+            System.out.println("Taken Optimistic lock");
+            a = 11;
+            Thread.sleep(6000);
+
+            if(!slock.validate(stamp)){
+                System.out.println("Updated a value successfully");
+            }else{
+                System.out.println("Rollback of work");
+                a = 10; // Rollback
+            }
+        }catch(Exception e){
+
+        }
+    }
+
+    public void consumer(){
+        long stamp = slock.writeLock();
+        System.out.println("Write lock acquired by: " + Thread.currentThread().getName());
+
+        try{
+            System.out.println("Performing work");
+            a = 9;
+        }
+        finally{
+            slock.unlockWrite(stamp);
+            System.out.println("Write lock released by : " +  Thread.currentThread().getName());
+        }
+    }
+}
+----------------------------------------------------------
+public class Main{
+    public static void main(String[] args){
+        SharedResource resource = new SharedResource();
+
+        Thread th1 = new Thread(() -> {
+            resource.producer();
+        });
+
+        Thread th2 = new Thread(() -> {
+            resource.consumer();
+        });
+
+        th1.start();
+        th2.start();
+    }
+}
+Output:
+Taken Optimistic lock
+Write lock acquired by: Thread-1
+Performing work
+Write lock released by : Thread-1
+Rollback of work
+
+Explanation:
+th1 (producer): takes optimistic read, prints “Taken Optimistic lock”, 
+sets a = 11, sleeps 6s.
+th2 (consumer): acquires writeLock, prints, sets a = 9, releases.
+th1 wakes and calls validate(stamp): this returns false (a write happened),
+so it prints “Rollback of work” and sets a = 10.
+________________________________________________________________________________________________________
+
+Semaphore Lock:
+A semaphore maintains a set of permits.
+
+Threads acquire a permit before entering a critical section, and release it when leaving.
+If no permits are available → threads are blocked until one is released.
+Think of it as a parking lot with limited spaces:
+    Cars (threads) can only enter if a space (permit) is free.
+    When a car leaves, it frees up a space for another car.
+Usecase:
+Use Semaphore when you want to control how many threads can access a resource at the same time.
+---------------------------------------------------------------------------------------------------
+Types of Semaphores
+
+Binary Semaphore (1 permit):
+    Works like a simple lock (similar to synchronized or ReentrantLock).
+    At most one thread can access at a time.
+
+Counting Semaphore (N permits):
+    Allows up to N threads to access concurrently.
+    Useful for throttling, limiting resources, or connection pools.
+
+----------------------------------------------------------------------------------------------------
+Fair Locks:
+
+By default, Semaphore is unfair (whoever comes first isn’t guaranteed to get the permit).
+
+You can make it fair by:
+Semaphore sem = new Semaphore(3, true); // fair
+----------------------------------------------------------
+Example:
+import java.util.concurrent.Semaphore;
+
+class ConnectionPool {
+    private final Semaphore semaphore = new Semaphore(5);
+
+    public void accessConnection() {
+        try {
+            semaphore.acquire();
+            System.out.println(Thread.currentThread().getName() + " acquired connection.");
+            Thread.sleep(2000); // simulate query execution
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            semaphore.release();
+            System.out.println(Thread.currentThread().getName() + " released connection.");
+        }
+    }
+}
+
+public class SemaphoreExample {
+    public static void main(String[] args) {
+        ConnectionPool pool = new ConnectionPool();
+
+        for (int i = 0; i < 10; i++) {
+            new Thread(pool::accessConnection, "Thread-" + i).start();
+        }
+    }
+}
+
+Output (at most 5 threads work at once):
+    Thread-0 acquired connection.
+    Thread-1 acquired connection.
+    Thread-2 acquired connection.
+    Thread-3 acquired connection.
+    Thread-4 acquired connection.
+    Thread-0 released connection.
+    Thread-5 acquired connection.
+    ...
+
+________________________________________________________________________________________________________
+2. Producer–Consumer with Bounded Buffer
+
+Use two semaphores:
+    One counting empty slots.
+    One counting full slots.
+    Ensures producer doesn’t overfill and consumer doesn’t over-consume.
+
+3. Resource Throttling (API Calls, File Access)
+
+Example: 
+limit only 3 threads at a time to download files from an external service, to avoid overwhelming the server.
+________________________________________________________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
