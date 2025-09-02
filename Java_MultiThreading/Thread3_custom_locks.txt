@@ -365,10 +365,253 @@ Use two semaphores:
 
 Example: 
 limit only 3 threads at a time to download files from an external service, to avoid overwhelming the server.
+_______________________________________________________________________________________________________________________
+
+Condition: java.util.concurrent.locks.Condition
+
+For ReentrantLock, ReadWriteLock, StampedLock and Semaphore we have to use await() instead of wait() and signal() instead of notify()
+
+Example:
+    Lock lock = new ReentrantLock();
+    Condition condition = lock.newCondition();
+
+🔹 await()
+    Similar to wait().
+    The calling thread:
+    Must hold the lock.
+    Releases the lock temporarily.
+    Goes into WAITING state until signalled.
+    Re-acquires the lock before resuming.
+
+🔹 signal() / signalAll()
+    Similar to notify() / notifyAll().
+    Used by another thread (holding the same lock) to wake up one (or all) threads waiting on that condition.
+    Woken threads must re-acquire the lock before continuing.
+
+Example: Producer–Consumer with Condition
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+class SharedResource {
+    private boolean itemAvailable = false;
+    private final Lock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
+
+    public void produce() throws InterruptedException {
+        lock.lock();
+        try {
+            while (itemAvailable) {
+                condition.await(); // wait until consumer consumes
+            }
+            System.out.println(Thread.currentThread().getName() + " produced item");
+            itemAvailable = true;
+            condition.signal(); // wake up one waiting consumer
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void consume() throws InterruptedException {
+        lock.lock();
+        try {
+            while (!itemAvailable) {
+                condition.await(); // wait until producer produces
+            }
+            System.out.println(Thread.currentThread().getName() + " consumed item");
+            itemAvailable = false;
+            condition.signal(); // wake up producer
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+
+public class ConditionExample {
+    public static void main(String[] args) {
+        SharedResource resource = new SharedResource();
+
+        Thread producer = new Thread(() -> {
+            try {
+                for (int i = 0; i < 3; i++) {
+                    resource.produce();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, "Producer");
+
+        Thread consumer = new Thread(() -> {
+            try {
+                for (int i = 0; i < 3; i++) {
+                    resource.consume();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, "Consumer");
+
+        producer.start();
+        consumer.start();
+    }
+}
+
+Output:
+    Producer produced item
+    Consumer consumed item
+    Producer produced item
+    Consumer consumed item
+    Producer produced item
+    Consumer consumed item
 ________________________________________________________________________________________________________
+🔹 Why Use Condition Instead of wait/notify?
 
+Multiple conditions per lock:
+With wait/notify, each object only has one implicit monitor condition.
 
+With Condition, you can create multiple:
+Condition notFull = lock.newCondition();
+Condition notEmpty = lock.newCondition();
 
+→ This is how ArrayBlockingQueue works internally.
+
+More explicit & readable:
+await() and signal() are tied to the lock, so usage is clearer.
+
+Avoids mistakes:
+No need to synchronize on arbitrary objects.
+________________________________________________________________________________________________________
+✅ In short:
+
+await() → wait until condition is met (releases lock, then reacquires later).
+signal() → wake up one waiting thread.
+signalAll() → wake up all waiting threads.
+
+________________________________________________________________________________________________________
+Example:
+The classic use case where Condition is better than wait/notify: a bounded buffer with two separate conditions — notFull and notEmpty.
+
+🔹 Why Two Conditions?
+    Producer should wait if the buffer is full → use notFull.await().
+    Consumer should wait if the buffer is empty → use notEmpty.await().
+    When producer adds → signal consumers (notEmpty.signal()).
+    When consumer removes → signal producers (notFull.signal()).
+This avoids spurious wakeups and prevents waking the wrong type of thread unnecessarily.
+
+Code Example: Bounded Buffer with Conditions:
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+class BoundedBuffer<T> {
+    private final Queue<T> buffer = new LinkedList<>();
+    private final int capacity;
+
+    private final Lock lock = new ReentrantLock();
+    private final Condition notFull = lock.newCondition();
+    private final Condition notEmpty = lock.newCondition();
+
+    public BoundedBuffer(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public void put(T item) throws InterruptedException {
+        lock.lock();
+        try {
+            while (buffer.size() == capacity) {
+                System.out.println(Thread.currentThread().getName() + " waiting: Buffer is full");
+                notFull.await(); // wait until space is available
+            }
+            buffer.add(item);
+            System.out.println(Thread.currentThread().getName() + " produced " + item);
+            notEmpty.signal(); // signal consumer
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public T take() throws InterruptedException {
+        lock.lock();
+        try {
+            while (buffer.isEmpty()) {
+                System.out.println(Thread.currentThread().getName() + " waiting: Buffer is empty");
+                notEmpty.await(); // wait until item is available
+            }
+            T item = buffer.poll();
+            System.out.println(Thread.currentThread().getName() + " consumed " + item);
+            notFull.signal(); // signal producer
+            return item;
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+
+public class MultiConditionExample {
+    public static void main(String[] args) {
+        BoundedBuffer<Integer> buffer = new BoundedBuffer<>(3);
+
+        // Producer
+        Thread producer = new Thread(() -> {
+            try {
+                for (int i = 1; i <= 6; i++) {
+                    buffer.put(i);
+                    Thread.sleep(500);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, "Producer");
+
+        // Consumer
+        Thread consumer = new Thread(() -> {
+            try {
+                for (int i = 1; i <= 6; i++) {
+                    buffer.take();
+                    Thread.sleep(1000);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, "Consumer");
+
+        producer.start();
+        consumer.start();
+    }
+}
+
+Output:
+Producer produced 1
+Producer produced 2
+Producer produced 3
+Producer waiting: Buffer is full
+Consumer consumed 1
+Producer produced 4
+Consumer consumed 2
+Producer produced 5
+Consumer consumed 3
+Producer produced 6
+Consumer consumed 4
+Consumer consumed 5
+Consumer consumed 6
+
+🔹 Key Points
+
+Two conditions:
+notFull → blocks producers when buffer is full.
+notEmpty → blocks consumers when buffer is empty.
+
+Signal only the right type of thread:
+Producer signals notEmpty after adding.
+Consumer signals notFull after removing.
+
+Much more efficient than wait/notify, where all threads wake up and then compete unnecessarily.
+
+✅ This is exactly how classes like ArrayBlockingQueue and LinkedBlockingQueue are implemented internally in java.util.concurrent.
+_______________________________________________________________________________________________________________________________________________
 
 
 
