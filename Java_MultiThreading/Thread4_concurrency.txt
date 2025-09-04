@@ -1,0 +1,205 @@
+Concurrency can be achieved by using :
+
+1. Lock Based Mechanism:
+synchronized
+Reentrant
+Stamped
+ReadWrite
+Semaphores
+
+2. Lock Free Mechanism:
+CAS Operation (Compare and Swap):
+    AtomicInteger
+    AtomicBoolean
+    AtomicLong
+    AtomicReference
+
+________________________________________________________________________________________________________
+
+First Understand What is Optimistic Concurrency control
+
+Lets say there is a row in DB
+Id  Name  Row_Version
+123 Raj      1
+
+Thread-1 and Thread-2 are operating update operations on Id 123
+
+Thread-1 runs update query where Row_Version=1 Update Name = RajK as the update operation completes Row_Version get incremented to '2'.
+and
+after Thread-1's update, Thread-2 also runs the update query as Where Row_Version=1 Update Name = Raja - this Update operation fails as Row_Version is already changed 
+and Thread-2 has to then recheck the row and take the updated Row_Version to update the Name attribute.
+
+This process is called an Optimistic Concurrency Control.
+________________________________________________________________________________________________________
+
+CAS Operation is very similar to Optimistic Locking
+
+Lock Free Mechanism uses CAS Technique:
+- Its a Low Level Operation
+- Its Atomic:
+Meaning of Atomic
+    Atomic means the operation happens indivisibly:
+    No thread can observe the variable in an intermediate state.
+    Either the whole operation (compare + swap) happens, or nothing happens.
+    The CPU and JVM guarantee this atomicity using hardware-level instructions like CMPXCHG on x86.
+- and All modern processor supports it
+
+It works like this:
+
+Compare: Check if the variable still holds the expected value.
+Swap: If yes, update it to the new value.
+If not, the operation fails and can be retried.
+
+Example:
+AtomicInteger counter = new AtomicInteger(0);
+counter.compareAndSet(0, 1); // compare current value with 0, if match -> set to 1
+________________________________________________________________________________________________________
+🔹 The ABA Problem
+
+CAS works by saying:
+“If the variable’s value is still what I expect (A), then swap it with a new value (B).”
+But what if something like this happens between the compare and swap?
+Thread T1 reads value = A.
+Thread T2 changes value A → B → A.
+
+Now T1 comes back, sees value = A again, and thinks:
+👉 “Great, nothing has changed, safe to swap!”
+
+But actually, the value did change in between (to B and back to A).
+CAS can’t detect this intermediate modification.
+That’s the ABA problem.
+
+🔹 Why It’s a Problem
+
+CAS only checks the current value, not its history.
+Some algorithms care about whether the variable was modified at all, not just whether it has the same value now.
+-------------------------------------------------------------------------------------------------------------
+🔹 How to Solve the ABA Problem:
+
+AtomicStampedReference (value + version).
+AtomicMarkableReference (value + boolean mark).
+Using higher-level abstractions (ConcurrentLinkedQueue, BlockingQueue, etc.) that handle it internally.
+----------------------------------------------------------------------------------------------------------------
+Atomic Variables -
+
+atomic variables are classes in the java.util.concurrent.atomic package.
+They provide lock-free, thread-safe operations on single variables.
+Internally, they rely on CAS (Compare-And-Swap) at the hardware level to ensure atomicity.
+
+Eg 1. Without Atomic Variable (plain int) → suffers race conditions.
+
+public class CounterWithoutAtomic {
+    private static int counter = 0; // shared variable
+
+    public static void main(String[] args) throws InterruptedException {
+        Runnable task = () -> {
+            for (int i = 0; i < 1000; i++) {
+                counter++; // not atomic: read → add 1 → write
+            }
+        };
+
+        Thread t1 = new Thread(task);
+        Thread t2 = new Thread(task);
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+
+        System.out.println("Final counter (without atomic): " + counter);
+    }
+}
+
+Expected Value:
+- Final counter (without atomic): 1784   // or some value < 2000
+
+Explanation:
+Why not 2000?
+
+counter++ is not atomic. It breaks down into:
+    Read value.
+    Increment.
+    Write back.
+
+If Thread A and Thread B read at the same time, both increment the same old value and overwrite each other → lost updates.
+-------------------------------------------------------------------------------
+2. Counter with synchronized:
+
+public class CounterWithSynchronized {
+    private static int counter = 0;
+
+    // synchronized method ensures only one thread executes at a time
+    public synchronized static void increment() {
+        counter++;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Runnable task = () -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        };
+
+        Thread t1 = new Thread(task);
+        Thread t2 = new Thread(task);
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+
+        System.out.println("Final counter (synchronized): " + counter);
+    }
+}
+
+Expected Output:
+- Final counter (synchronized): 2000
+-------------------------------------------------------------------------------
+3. Counter With Atomic Variable
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class CounterWithAtomic {
+    private static AtomicInteger counter = new AtomicInteger(0);
+
+    public static void main(String[] args) throws InterruptedException {
+        Runnable task = () -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.incrementAndGet(); // atomic operation (CAS)
+            }
+        };
+
+        Thread t1 = new Thread(task);
+        Thread t2 = new Thread(task);
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+
+        System.out.println("Final counter (with atomic): " + counter.get());
+    }
+}
+
+Expected Output:
+- Final counter (with atomic): 2000
+
+Explanation:
+incrementAndGet() internally uses CAS (Compare-And-Swap), which is atomic at the CPU level.
+If two threads race:
+    One succeeds in updating.
+    The other retries with the new value.
+    No increments are lost.
+
+Key Difference:
+| Aspect        | Without Atomic                                   | With Atomic (`AtomicInteger`)      |
+| ------------- | ------------------------------------------------ | ---------------------------------- |
+| Operation     | `counter++` = read + write (not atomic)          | `incrementAndGet()` = CAS (atomic) |
+| Thread Safety | ❌ Not thread-safe                               | ✅ Thread-safe                      |
+| Performance   | Needs external locks (`synchronized`) to be safe | Lock-free, faster under contention |
+| Result        | Inconsistent (lost updates)                      | Always correct                     |
+
+________________________________________________________________________________________________________
+
+Volatile -
+No relation with Concurrency

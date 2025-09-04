@@ -1,0 +1,125 @@
+# 🔹 What is `volatile`?
+
+* `volatile` is a **field modifier** in Java.
+* It tells the JVM and CPU:
+  👉 *“This variable is stored in **main memory**, not just CPU caches. Always read the latest value, and always write changes back immediately.”*
+
+In short:
+
+* Guarantees **visibility** (all threads see the most recent value).
+* Does **not guarantee atomicity** (except for `long` and `double`, where it ensures atomic reads/writes).
+-----------------------------------------------------------------------------------------------------------
+
+# 🔹 Problem Without Volatile
+
+By default, each thread may keep a **cached copy** of a variable in a CPU register or local cache.
+
+* Thread A changes a variable.
+* Thread B may not see it immediately, because it’s still looking at its cached copy.
+-----------------------------------------------------------------------------------------------------------
+
+# 🔹 Example Without Volatile
+
+class SharedResource {
+    boolean running = true;
+
+    public void runTask() {
+        while (running) { // may never exit if cached
+            // do some work
+        }
+        System.out.println("Stopped");
+    }
+}
+
+public class VolatileDemo {
+    public static void main(String[] args) throws InterruptedException {
+        SharedResource resource = new SharedResource();
+
+        Thread t1 = new Thread(resource::runTask);
+        t1.start();
+
+        Thread.sleep(1000);
+
+        resource.running = false; // signal thread to stop
+        System.out.println("Main updated running=false");
+    }
+}
+-----------------------------------------------------------------------------------------------------------
+
+### ⚠️ Problem
+
+* Thread `t1` may **never stop** because it might keep seeing the cached `running = true`.
+* The write by the main thread isn’t guaranteed visible to the worker thread.
+-----------------------------------------------------------------------------------------------------------
+
+# 🔹 Example With Volatile
+
+```java
+class SharedResource {
+    volatile boolean running = true; // volatile added
+
+    public void runTask() {
+        while (running) {
+            // do some work
+        }
+        System.out.println("Stopped");
+    }
+}
+```
+
+### ✅ Behavior
+
+* As soon as `main` sets `running = false`, thread `t1` will **see the change** and exit the loop.
+# 🔹 Guarantees of Volatile
+
+1. **Visibility**:
+
+   * All threads immediately see changes to a volatile variable.
+   * Reads always fetch the latest value from main memory.
+
+2. **Atomicity for reads/writes of primitives**:
+
+   * For `int`, `boolean`, etc. → reads/writes are already atomic.
+   * For `long` and `double` (64-bit types) → volatile ensures atomicity too.
+
+---
+
+# 🔹 Limitations of Volatile
+
+* ❌ **Not atomic for compound actions** (like `count++`).
+
+  volatile int count = 0;
+  // Not atomic: read + increment + write
+  count++;
+
+  Multiple threads can still cause race conditions. Use `AtomicInteger` or `synchronized` for such cases.
+* ❌ Doesn’t replace locks if you need **mutual exclusion**.
+
+---
+
+# 🔹 Real-World Analogy
+
+Think of `volatile` as a **whiteboard in an office**:
+
+* Everyone reads/writes from the central whiteboard (main memory).
+* No one uses sticky notes at their desks (CPU cache).
+* Everyone always sees the latest message.
+
+But if multiple people try to erase and write at the same time, chaos still happens (no atomicity).
+
+---
+
+# 🔹 Common Use Cases
+
+* **Flags / signals** between threads:
+
+  volatile boolean shutdown = false;
+
+* **Double-checked locking** in singleton patterns.
+* **State variables** that need visibility but not compound atomicity.
+-----------------------------------------------------------------------------------------------------------------
+✅ In summary:
+
+* `volatile` = **visibility guarantee**, not **atomicity guarantee**.
+* Use it for **simple flags or state sharing**.
+* Use **Atomic classes or locks** for atomic updates.

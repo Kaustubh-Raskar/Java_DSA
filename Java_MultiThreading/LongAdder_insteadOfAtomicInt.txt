@@ -1,0 +1,96 @@
+# 🔹 Why LongAdder?
+
+* **AtomicInteger/AtomicLong** use **CAS (Compare-And-Swap)**.
+* Under **low contention** (few threads), they’re fast.
+* Under **high contention** (many threads updating same variable), lots of retries happen → performance drops.
+* **LongAdder** solves this by spreading updates across multiple cells and combining them when needed.
+------------------------------------------------------------------------------------------------------------------
+# 🔹 How LongAdder Works
+
+* Instead of a single counter, it maintains an **array of counters (cells)**.
+* Each thread increments a different cell → reducing contention.
+* When you call `sum()`, it aggregates all cells + base.
+* Think of it as **sharded counters** with a final aggregation.
+
+------------------------------------------------------------------------------------------------------------------
+# 🔹 Example: Using LongAdder
+
+```java
+import java.util.concurrent.atomic.LongAdder;
+
+public class LongAdderExample {
+    private static LongAdder counter = new LongAdder();
+
+    public static void main(String[] args) throws InterruptedException {
+        Runnable task = () -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.increment(); // add 1 atomically (spread across cells)
+            }
+        };
+
+        Thread t1 = new Thread(task);
+        Thread t2 = new Thread(task);
+        Thread t3 = new Thread(task);
+        Thread t4 = new Thread(task);
+
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+
+        t1.join();
+        t2.join();
+        t3.join();
+        t4.join();
+
+        System.out.println("Final counter (LongAdder): " + counter.sum());
+    }
+}
+```
+
+### ✅ Output
+
+```
+Final counter (LongAdder): 4000
+------------------------------------------------------------------------------------------------------------------
+
+# 🔹 Comparison: AtomicInteger vs LongAdder
+
+| Feature         | AtomicInteger                | LongAdder                                                         |
+| --------------- | ---------------------------- | ----------------------------------------------------------------- |
+| Implementation  | Single value, CAS updates    | Multiple cells + CAS updates                                      |
+| Contention      | High contention → retries    | Handles contention by spreading updates                           |
+| Accuracy        | Always exact                 | Always exact (but `sum()` is a snapshot, not atomic with updates) |
+| Best use case   | Few threads, simple counters | Many threads, very frequent increments                            |
+| Memory overhead | Low                          | Higher (stores multiple cells)                                    |
+
+---
+
+# 🔹 Real-World Analogy
+
+* **AtomicInteger** → one ticket counter with one clerk. If many customers come, they all queue for the same clerk → congestion.
+* **LongAdder** → multiple mini-counters (several clerks). Customers split across them, much faster. At the end of the day, you add up all tickets → total count.
+
+---
+
+# 🔹 When to Use What
+
+* **AtomicInteger / AtomicLong** →
+
+  * Few threads.
+  * Occasional updates.
+  * Memory-efficient.
+
+* **LongAdder** →
+
+  * Many threads updating frequently (high contention).
+  * Performance-critical counters (e.g., web request counters, metrics, monitoring systems).
+
+---
+
+✅ In practice:
+
+* For **metrics (e.g., Prometheus counters, request counts)** → use `LongAdder`.
+* For **business-critical counters that must be exact at each update** → use `AtomicInteger`.
+
+---
